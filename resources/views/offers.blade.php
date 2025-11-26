@@ -23,19 +23,27 @@
         }
         .offer-card h2 { margin-top: 0; }
         .tag { font-size: 12px; color: #555; }
-        .cta-btn { margin-top: 10px; padding: 6px 10px; }
+        .cta-btn { margin-top: 10px; padding: 6px 10px; cursor: pointer; }
+        .cta-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
         .msg-success { color: green; }
         .msg-error { color: red; }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 6px 8px;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
 <header>
     <nav>
-        <a href="{{ url('/') }}">Galvenā lapa</a> |
-        <a href="{{ url('/services') }}">Pakalpojumi</a> |
-        <a href="{{ url('/products') }}">Produkti</a> |
-        <a href="{{ url('/our-work') }}">Mūsu darbi</a> |
+        <a href="{{ route('home') }}">Galvenā lapa</a> |
+        <a href="{{ route('services.index') }}">Pakalpojumi</a> |
+        <a href="{{ route('products.index') }}">Produkti</a> |
+        <a href="{{ route('our-work') }}">Mūsu darbi</a> |
         <strong><a href="{{ route('offers.index') }}">Piedāvājumi / pasākumi</a></strong>
     </nav>
 </header>
@@ -58,9 +66,9 @@
                     <h2>{{ $offer->title }}</h2>
 
                     @if($offer->type === 'webinar')
-                        <span class="tag">Vebinārs / pasākums</span>
+                        <span class="tag">Vebinārs / online pasākums</span>
                     @else
-                        <span class="tag">Detailing piedāvājums</span>
+                        <span class="tag">Detailing piedāvājums (ar auto)</span>
                     @endif
 
                     @if($offer->event_date)
@@ -71,32 +79,34 @@
                         <p>{{ $offer->description }}</p>
                     @endif
 
-                    {{-- WEBINĀRA PIETEIKŠANĀS --}}
+                    {{-- WEBINĀRS (vietu limits + pieteikšanās skaits) --}}
                     @if($offer->type === 'webinar')
-                        @if($offer->is_limited)
+                        @if($offer->is_limited && $offer->capacity)
                             <p>Vietas: {{ $offer->registrations_count }} / {{ $offer->capacity }}</p>
                         @endif
 
-                        @if($offer->is_limited && $offer->registrations_count >= $offer->capacity)
+                        @if($offer->is_limited && $offer->capacity && $offer->registrations_count >= $offer->capacity)
                             <button class="cta-btn" disabled>Pilns</button>
                         @else
                             <form method="POST" action="{{ route('offers.signup', $offer) }}">
                                 @csrf
                                 <div>
-                                    <input type="text" name="name" placeholder="Vārds" required>
+                                    <label>Vārds</label>
+                                    <input type="text" name="name" required>
                                 </div>
                                 <div>
-                                    <input type="email" name="email" placeholder="E-pasts" required>
+                                    <label>E-pasts</label>
+                                    <input type="email" name="email" required>
                                 </div>
                                 <button type="submit" class="cta-btn">Pieteikties vebināram</button>
                             </form>
                         @endif
 
+                    {{-- DETAILING PIEDĀVĀJUMS – uz booking ar time slotiem --}}
                     @else
-                        {{-- DETAILING PIEDĀVĀJUMS – vedam uz booking --}}
-                        <p><em>Šim piedāvājumam pieteikšanās notiek ar auto booking formu.</em></p>
+                        <p><em>Šim piedāvājumam pieteikšanās notiek ar auto rezervācijas formu, kur varēsi izvēlēties laiku.</em></p>
                         <a href="{{ route('booking.create', ['offer' => $offer->id]) }}" class="cta-btn">
-                            Pieteikties ar atlaidi
+                            Pieteikties uz detailing ar atlaidi
                         </a>
                     @endif
                 </div>

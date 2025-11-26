@@ -2,175 +2,167 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <title>Pieteikt vizīti</title>
+    <title>Auto detailing pieteikums</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
         body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
         header nav a { margin-right: 10px; }
-        label { display:block; margin-top: 10px; }
-        fieldset { margin-top: 15px; }
-        .total-box {
-            margin-top: 20px;
-            padding: 15px;
-            border: 2px solid #333;
-            background: #f9f9f9;
+        h1 { margin-bottom: 10px; }
+        .field { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 3px; }
+        input[type="text"], input[type="tel"], input[type="email"], input[type="date"], input[type="time"], select {
+            width: 100%;
+            padding: 6px 8px;
+            box-sizing: border-box;
         }
-        .total-box h2 {
-            margin-top: 0;
-        }
-        .total-value {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .error { color: red; }
-        .success { color: green; font-weight: bold; }
+        .msg-success { color: green; }
+        .msg-error { color: red; }
+        .services-list label { font-weight: normal; }
     </style>
 </head>
 <body>
 
 <header>
-    
-        <strong>Pieteikt vizīti</strong>
+    <nav>
+        <a href="{{ route('home') }}">Galvenā lapa</a> |
+        <a href="{{ route('services.index') }}">Pakalpojumi</a> |
+        <a href="{{ route('products.index') }}">Produkti</a> |
+        <a href="{{ route('our-work') }}">Mūsu darbi</a> |
+        <a href="{{ route('offers.index') }}">Piedāvājumi / pasākumi</a>
     </nav>
 </header>
 
 <main>
-    <h1>Pieteikt auto detailing vizīti</h1>
+    <h1>Auto detailing pieteikums</h1>
 
-    {{-- Success ziņa no BookingController --}}
     @if(session('success'))
-        <p class="success">{{ session('success') }}</p>
+        <p class="msg-success">{{ session('success') }}</p>
     @endif
 
-    {{-- Kļūdu saraksts --}}
+    @if(session('error'))
+        <p class="msg-error">{{ session('error') }}</p>
+    @endif
+
     @if($errors->any())
-        <ul class="error">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+        <div class="msg-error">
+            <ul>
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    <form id="booking-form" method="POST" action="{{ route('booking.store') }}">
-            {{-- KLIENTA DATI --}}
-        <label for="customer_name">Vārds, Uzvārds:</label>
-        <input type="text" id="customer_name" name="customer_name" required>
+    {{-- Ja nākam no īpaša detailing piedāvājuma --}}
+    @if(isset($offer) && $offer)
+        <p><strong>Piedāvājums:</strong> {{ $offer->title }}</p>
 
-        <label for="customer_phone">Telefons:</label>
-        <input type="text" id="customer_phone" name="customer_phone" required>
+        @if($offer->event_date)
+            <p><strong>Datums:</strong> {{ $offer->event_date }}</p>
+        @endif
+    @endif
 
-        <label for="customer_email">E-pasts (nav obligāts):</label>
-        <input type="email" id="customer_email" name="customer_email">
-
+    <form method="POST" action="{{ route('booking.store') }}">
         @csrf
 
-        {{-- AUTO IZVĒLE --}}
-        <label for="car">Izvēlies auto modeli:</label>
-        <select id="car" name="car" required>
-            <option value="">-- Izvēlies auto --</option>
-            {{-- TE VARĒSI IEMEST SAVU MILZĪGO SARAKSTU --}}
-            <option value="Mazs auto" data-multiplier="1.0">Mazs auto (Fiesta, Polo, Yaris...)</option>
-            <option value="Vidējs auto" data-multiplier="1.2">Vidējs auto (A4, 3 Series, Golf...)</option>
-            <option value="SUV" data-multiplier="1.5">SUV (Q7, X5, GLE...)</option>
-            <option value="Busiņš" data-multiplier="2.0">Busiņš (Transporter, Sprinter...)</option>
-        </select>
+        {{-- Ja ir offer, sūtam tā ID formā --}}
+        @if(isset($offer) && $offer)
+            <input type="hidden" name="offer_id" value="{{ $offer->id }}">
+        @endif
 
-        {{-- STĀVOKLIS --}}
-        <label for="condition">Auto stāvoklis:</label>
-        <select id="condition" name="condition" required>
-            <option value="">-- Izvēlies --</option>
-            <option value="normal">Normāls</option>
-            <option value="dirty">Netīrs</option>
-            <option value="very_dirty">Ļoti netīrs</option>
-        </select>
-
-        {{-- DATUMS + LAIKS --}}
-        <label for="date">Datums:</label>
-        <input type="date" id="date" name="date" required>
-
-        <label for="time">Laiks:</label>
-        <input type="time" id="time" name="time" required>
-
-        {{-- PAKALPOJUMI --}}
-        <fieldset>
-            <legend>Pakalpojumi:</legend>
-
-            <label>
-                <input type="checkbox" name="services[]" value="exterior" class="service" data-price="30">
-                Ārējā mazgāšana (30 €)
-            </label>
-
-            <label>
-                <input type="checkbox" name="services[]" value="interior" class="service" data-price="40">
-                Salona tīrīšana (40 €)
-            </label>
-
-            <label>
-                <input type="checkbox" name="services[]" value="polishing" class="service" data-price="80">
-                Pulēšana (80 €)
-            </label>
-        </fieldset>
-
-        {{-- SLEPENAIS LAUKS AR KOPĒJO CENU (tiks nosūtīts uz controllera) --}}
-        <input type="hidden" name="total" id="totalInput" value="0">
-
-        {{-- CENU KALKULATORA BLOKS --}}
-        <div class="total-box">
-            <h2>Cenu kalkulators</h2>
-            <p>Auto izmērs + pakalpojumu cena + stāvoklis:</p>
-            <p>Kopējā cena: <span class="total-value" id="totalDisplay">€0.00</span></p>
+        <div class="field">
+            <label>Vārds, Uzvārds</label>
+            <input type="text" name="customer_name" value="{{ old('customer_name') }}" required>
         </div>
 
-        <button type="submit" style="margin-top: 15px;">Pieteikt vizīti</button>
+        <div class="field">
+            <label>Telefona numurs</label>
+            <input type="tel" name="customer_phone" value="{{ old('customer_phone') }}" required>
+        </div>
+
+        <div class="field">
+            <label>E-pasts (nav obligāts)</label>
+            <input type="email" name="customer_email" value="{{ old('customer_email') }}">
+        </div>
+
+        <div class="field">
+            <label>Auto modelis</label>
+            <input type="text" name="car" value="{{ old('car') }}" required>
+            {{-- šeit vēlāk var ielikt tavu mega select ar visiem auto --}}
+        </div>
+
+        <div class="field">
+            <label>Auto stāvoklis</label>
+            <select name="condition" required>
+                <option value="">-- Izvēlies --</option>
+                <option value="normal" {{ old('condition') === 'normal' ? 'selected' : '' }}>Normāls</option>
+                <option value="dirty"  {{ old('condition') === 'dirty' ? 'selected' : '' }}>Ļoti netīrs</option>
+                <option value="new"    {{ old('condition') === 'new' ? 'selected' : '' }}>Gandrīz kā jauns</option>
+            </select>
+        </div>
+
+        {{-- Datums --}}
+        @if(isset($offer) && $offer && $offer->type === 'detailing' && $offer->has_timeslots && $offer->event_date)
+            {{-- Datumu neliekam izvēlēties, tas ir fiksēts --}}
+            <input type="hidden" name="date" value="{{ $offer->event_date }}">
+        @else
+            <div class="field">
+                <label>Datums</label>
+                <input type="date" name="date" value="{{ old('date') }}">
+            </div>
+        @endif
+
+        {{-- Laiks --}}
+        <div class="field">
+            <label>Laiks</label>
+
+            @if(isset($offer) && $offer && $offer->type === 'detailing' && $offer->has_timeslots && !empty($timeSlots))
+                <select name="time" required>
+                    <option value="">-- Izvēlies laiku --</option>
+                    @foreach($timeSlots as $slot)
+                        @php
+                            $taken = isset($takenSlots) && in_array($slot, $takenSlots);
+                        @endphp
+                        <option value="{{ $slot }}" {{ $taken ? 'disabled' : '' }}>
+                            {{ $slot }} {{ $taken ? '(aizņemts)' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            @else
+                <input type="time" name="time" value="{{ old('time') }}" required>
+            @endif
+        </div>
+
+        {{-- Pakalpojumi (vienkārši piemēri, tu vari pielikt savus) --}}
+        <div class="field services-list">
+            <label>Izvēlies pakalpojumus</label>
+            <label>
+                <input type="checkbox" name="services[]" value="exterior"
+                    {{ is_array(old('services')) && in_array('exterior', old('services')) ? 'checked' : '' }}>
+                Ārējā mazgāšana
+            </label>
+            <label>
+                <input type="checkbox" name="services[]" value="interior"
+                    {{ is_array(old('services')) && in_array('interior', old('services')) ? 'checked' : '' }}>
+                Salona tīrīšana
+            </label>
+            <label>
+                <input type="checkbox" name="services[]" value="polishing"
+                    {{ is_array(old('services')) && in_array('polishing', old('services')) ? 'checked' : '' }}>
+                Pulēšana
+            </label>
+        </div>
+
+        <div class="field">
+            <label>Kopējā summa (€)</label>
+            <input type="text" name="total" value="{{ old('total', '0.00') }}" required>
+            {{-- šeit vari likt savu JS kalkulatoru, kas aprēķina cenu automātiski --}}
+        </div>
+
+        <button type="submit">Pieteikt vizīti</button>
     </form>
 </main>
-
-<script>
-    const carSelect = document.getElementById('car');
-    const conditionSelect = document.getElementById('condition');
-    const serviceCheckboxes = document.querySelectorAll('.service');
-    const totalDisplay = document.getElementById('totalDisplay');
-    const totalInput = document.getElementById('totalInput');
-
-    function calculateTotal() {
-        let base = 0;
-
-        // Saskaita izvēlēto pakalpojumu cenu
-        serviceCheckboxes.forEach(cb => {
-            if (cb.checked) {
-                base += parseFloat(cb.dataset.price);
-            }
-        });
-
-        // Auto multiplikators
-        let carMultiplier = 1;
-        const selectedCarOption = carSelect.options[carSelect.selectedIndex];
-        if (selectedCarOption && selectedCarOption.dataset.multiplier) {
-            carMultiplier = parseFloat(selectedCarOption.dataset.multiplier) || 1;
-        }
-
-        // Stāvokļa multiplikators
-        let conditionMultiplier = 1;
-        const condition = conditionSelect.value;
-        if (condition === 'dirty') {
-            conditionMultiplier = 1.1;      // +10%
-        } else if (condition === 'very_dirty') {
-            conditionMultiplier = 1.25;     // +25%
-        }
-
-        const total = base * carMultiplier * conditionMultiplier;
-
-        totalDisplay.textContent = '€' + total.toFixed(2);
-        totalInput.value = total.toFixed(2);
-    }
-
-    carSelect.addEventListener('change', calculateTotal);
-    conditionSelect.addEventListener('change', calculateTotal);
-    serviceCheckboxes.forEach(cb => {
-        cb.addEventListener('change', calculateTotal);
-    });
-</script>
 
 </body>
 </html>

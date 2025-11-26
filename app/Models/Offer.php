@@ -8,7 +8,7 @@ class Offer extends Model
 {
     protected $fillable = [
         'title',
-        'type',
+        'type',                 // 'webinar' vai 'detailing'
         'description',
         'event_date',
         'is_limited',
@@ -16,6 +16,14 @@ class Offer extends Model
         'registrations_count',
         'has_timeslots',
         'is_active',
+    ];
+
+    protected $casts = [
+        'is_limited'        => 'boolean',
+        'has_timeslots'     => 'boolean',
+        'is_active'         => 'boolean',
+        'capacity'          => 'integer',
+        'registrations_count' => 'integer',
     ];
 
     public function registrations()

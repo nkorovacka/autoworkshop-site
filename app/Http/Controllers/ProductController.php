@@ -6,12 +6,17 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
+    // Produktu saraksts (katalogs)
     public function index()
     {
-        // Paņem visus produktus no DB
         $products = Product::all();
 
-        // Rāda resources/views/products.blade.php
         return view('products', compact('products'));
+    }
+
+    // Viena produkta detalizēta lapa
+    public function show(Product $product)
+    {
+        return view('product-show', compact('product'));
     }
 }

@@ -1,10 +1,18 @@
 <?php
-use App\Http\Controllers\OfferController;
-use App\Http\Controllers\BookingController;
+
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\OfferController;
+use App\Http\Controllers\OrderController; // <- pievienojam šo
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Website Routes
+|--------------------------------------------------------------------------
+*/
 
 // Galvenā lapa
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -14,20 +22,26 @@ Route::get('/services', [ServiceController::class, 'index'])->name('services.ind
 
 // Produkti
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::post('/products/{product}/order', [OrderController::class, 'store'])->name('products.order');
 
 // Mūsu darbi
 Route::get('/our-work', function () {
     return view('our-work');
 })->name('our-work');
 
-// Booking (pagaidām vienkārša lapa)
-// Booking forma
+/*
+|--------------------------------------------------------------------------
+| Booking (auto detailing pieraksti)
+|--------------------------------------------------------------------------
+*/
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-Route::get('/offers', function () {
-    return view('offers');
-})->name('offers');
-// Piedāvājumi / pasākumi
+
+/*
+|--------------------------------------------------------------------------
+| Piedāvājumi / Pasākumi / Vebināri
+|--------------------------------------------------------------------------
+*/
 Route::get('/offers', [OfferController::class, 'index'])->name('offers.index');
 Route::post('/offers/{offer}/signup', [OfferController::class, 'signup'])->name('offers.signup');
-

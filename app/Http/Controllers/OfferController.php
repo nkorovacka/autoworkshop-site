@@ -18,12 +18,12 @@ class OfferController extends Controller
         return view('offers', compact('offers'));
     }
 
-    // Pieteikšanās vebināram/pasākumam bez auto
+    // Pieteikšanās tikai WEBINĀRIEM / pasākumiem bez auto
     public function signup(Request $request, Offer $offer)
     {
-        // drošībai – tikai webinar tipam
+        // Drošībai – tikai 'webinar' tipa piedāvājumiem
         if ($offer->type !== 'webinar') {
-            return back()->with('error', 'Šim piedāvājumam pieteikšanās notiek caur auto booking.');
+            return back()->with('error', 'Šim piedāvājumam pieteikšanās notiek caur auto rezervāciju.');
         }
 
         $data = $request->validate([
@@ -31,19 +31,19 @@ class OfferController extends Controller
             'email' => 'required|email|max:255',
         ]);
 
-        // ja ir limits un jau pilns
+        // Ja ir limits un jau pilns
         if ($offer->is_limited && $offer->registrations_count >= $offer->capacity) {
             return back()->with('error', 'Šis pasākums jau ir pilns.');
         }
 
         OfferRegistration::create([
             'offer_id' => $offer->id,
-            'user_id'  => null, // nākotnē šeit būs auth lietotāja ID
+            'user_id'  => null, // nākotnē te varēsi likt auth()->id()
             'name'     => $data['name'],
             'email'    => $data['email'],
         ]);
 
-        // palielinām skaitītāju
+        // Palielinām skaitītāju
         $offer->increment('registrations_count');
 
         return back()->with('success', 'Tu esi veiksmīgi pieteicies šim pasākumam!');
