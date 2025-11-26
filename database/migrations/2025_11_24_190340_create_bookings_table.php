@@ -13,16 +13,26 @@ return new class extends Migration
 {
     Schema::create('bookings', function (Blueprint $table) {
         $table->id();
-        $table->unsignedBigInteger('user_id')->nullable(); // ja nākotnē būs login
+
+        // Klienta info
+        $table->string('customer_name');
+        $table->string('customer_phone');
+        $table->string('customer_email')->nullable();
+
+        // Auto un pakalpojumi
         $table->string('car_model');
         $table->string('condition');
-        $table->string('material')->nullable();
         $table->date('date');
         $table->string('time_slot');
+        $table->text('services'); // saglabāsim kā tekstu (piem.: "exterior, interior")
+
+        // Cena
         $table->decimal('total_price', 8, 2);
+
         $table->timestamps();
     });
 }
+
 
 
     /**

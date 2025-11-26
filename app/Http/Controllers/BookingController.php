@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
 use Illuminate\Http\Request;
+use App\Models\Booking;
 
 class BookingController extends Controller
 {
     public function create()
     {
-        // Šeit varētu ielikt arī carOptions no atsevišķa faila, bet eksāmenam vari turēt Blade'ā
         return view('booking');
     }
 
@@ -17,9 +16,12 @@ class BookingController extends Controller
     {
         // Validācija
         $data = $request->validate([
+            'customer_name'   => 'required|string|max:255',
+            'customer_phone'  => 'required|string|max:50',
+            'customer_email'  => 'nullable|email|max:255',
+
             'car'       => 'required|string',
             'condition' => 'required|string',
-            'material'  => 'nullable|string',
             'date'      => 'required|date',
             'time'      => 'required|string',
             'total'     => 'required|numeric|min:0',
@@ -28,40 +30,22 @@ class BookingController extends Controller
             'services.required' => 'Lūdzu izvēlies vismaz vienu pakalpojumu.',
         ]);
 
-        // Ja interjers, tad materiālam jābūt
-        if (in_array('interior', $data['services']) && empty($data['material'])) {
-            return back()
-                ->withInput()
-                ->withErrors(['material' => 'Ja izvēlēts salona pakalpojums, jānorāda materiāls.']);
-        }
-
-        // Pārbaudām, vai laiks jau aizņemts
-        $exists = Booking::where('date', $data['date'])
-            ->where('time_slot', $data['time'])
-            ->exists();
-
-        if ($exists) {
-            return back()
-                ->withInput()
-                ->withErrors(['time' => 'Šis laiks jau ir aizņemts!']);
-        }
-
-        // Ja tev ir autentifikācija, var lietot auth()->id()
-        $userId = auth()->id(); // vai null, ja nav login sistēmas
+        // Pakalpojumu sarakstu saglabāsim kā tekstu
+        $servicesText = implode(', ', $data['services']);
 
         Booking::create([
-            'user_id'     => $userId,
-            'car_model'   => $data['car'],
-            'condition'   => $data['condition'],
-            'material'    => $data['material'] ?? null,
-            'date'        => $data['date'],
-            'time_slot'   => $data['time'],
-            'total_price' => $data['total'],
+            'customer_name'   => $data['customer_name'],
+            'customer_phone'  => $data['customer_phone'],
+            'customer_email'  => $data['customer_email'] ?? null,
+
+            'car_model'       => $data['car'],
+            'condition'       => $data['condition'],
+            'date'            => $data['date'],
+            'time_slot'       => $data['time'],
+            'services'        => $servicesText,
+            'total_price'     => $data['total'],
         ]);
 
-        // Te varētu arī saglabāt services atsevišķā tabulā (booking_services), ja grib
-        // eksāmenam pietiek ar kopējo summu un info
-
-        return redirect()->route('booking.create')->with('success', 'Pieteikums veiksmīgi saglabāts!');
+        return back()->with('success', 'Pieteikums veiksmīgi saglabāts!');
     }
 }

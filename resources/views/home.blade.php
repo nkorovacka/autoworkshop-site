@@ -6,12 +6,12 @@
 </head>
 <body>
 <header>
-    <nav>
+        <nav>
         <a href="{{ url('/') }}">Galvenā lapa</a> |
         <a href="{{ url('/services') }}">Pakalpojumi</a> |
         <a href="{{ url('/products') }}">Produkti</a> |
+        <a href="{{ url('/offers') }}">Piedāvājumi</a> |
         <a href="{{ url('/our-work') }}">Mūsu darbi</a>
-    </nav>
 </header>
 
 <main>
