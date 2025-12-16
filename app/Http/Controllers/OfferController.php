@@ -21,7 +21,12 @@ class OfferController extends Controller
     // Pieteikšanās tikai WEBINĀRIEM / pasākumiem bez auto
     public function signup(Request $request, Offer $offer)
     {
-        // Drošībai – tikai 'webinar' tipa piedāvājumiem
+        // Tikai pieteikšanās no reģistrētiem lietotājiem un tikai vebināriem
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('error', 'Lai pieteiktos vebināram, lūdzu pieslēdzies sistēmai.');
+        }
+
         if ($offer->type !== 'webinar') {
             return back()->with('error', 'Šim piedāvājumam pieteikšanās notiek caur auto rezervāciju.');
         }
@@ -38,7 +43,7 @@ class OfferController extends Controller
 
         OfferRegistration::create([
             'offer_id' => $offer->id,
-            'user_id'  => null, // nākotnē te varēsi likt auth()->id()
+            'user_id'  => auth()->id(),
             'name'     => $data['name'],
             'email'    => $data['email'],
         ]);

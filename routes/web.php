@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ProductController;
@@ -16,6 +17,14 @@ use Illuminate\Support\Facades\Route;
 
 // Galvenā lapa
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Autorizācija
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::view('/profile', 'auth.profile')->middleware('auth')->name('profile');
 
 // Pakalpojumi
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

@@ -104,6 +104,10 @@
             color: var(--ink);
             cursor: pointer;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-login:hover {
@@ -120,10 +124,81 @@
             color: white;
             cursor: pointer;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-signup:hover {
             background: #333;
+        }
+
+        .auth-buttons.signed-in {
+            gap: 0.6rem;
+        }
+
+        .user-greeting {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+
+        .btn-cart,
+        .btn-profile {
+            padding: 0.45rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-cart {
+            border: 1px solid #e8e8e8;
+            background: white;
+            color: var(--ink);
+        }
+
+        .btn-cart:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-profile {
+            border: none;
+            background: var(--ink);
+            color: white;
+        }
+
+        .btn-profile:hover {
+            background: #333;
+        }
+
+        .auth-buttons.signed-in {
+            align-items: center;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .btn-logout {
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            background: #f1f1f1;
+            color: var(--ink);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #dfdfdf;
         }
 
         /* Hero */
@@ -877,18 +952,30 @@
         <nav>
             <div class="logo">Auto Detailing</div>
             <ul class="nav-links">
-                <li><a href="/" class="active">Galvenā</a></li>
-                <li><a href="/services">Pakalpojumi</a></li>
-                <li><a href="/products">Produkti</a></li>
-                <li><a href="/offers">Piedāvājumi</a></li>
-                <li><a href="/our-work">Darbi</a></li>
+                <li><a href="{{ route('home') }}" class="active">Galvenā</a></li>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('our-work') }}">Darbi</a></li>
             </ul>
             <div class="nav-right">
-                <button class="icon-button" title="Profils">👤</button>
-                <div class="auth-buttons">
-                    <button class="btn-login">Ieiet</button>
-                    <button class="btn-signup">Reģistrēties</button>
-                </div>
+                @auth
+                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
+                    <div class="auth-buttons signed-in">
+                        <a class="btn-cart" href="#">🛒 Grozs</a>
+                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
+                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                            @csrf
+                            <button type="submit" class="btn-logout">Iziet</button>
+                        </form>
+                    </div>
+                @else
+                    <button class="icon-button" title="Profils">👤</button>
+                    <div class="auth-buttons">
+                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
+                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
+                    </div>
+                @endauth
             </div>
         </nav>
     </header>
@@ -1196,12 +1283,17 @@
         document.querySelectorAll('.service-option').forEach(option => {
             option.addEventListener('click', function(e) {
                 if (e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
                     const checkbox = this.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                    calculateTotal();
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
                 }
             });
         });
+
+        calculateTotal();
     </script>
 </body>
 </html>
