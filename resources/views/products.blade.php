@@ -15,8 +15,14 @@
             --border: #ededed;
         }
         body { font-family: "Inter", Arial, sans-serif; background:#f7f7f7; color:var(--ink); line-height:1.6; }
-        header, footer { background:white; border-bottom:1px solid var(--border); }
-        footer { border-top:1px solid var(--border); border-bottom:none; }
+header { background:white; border-bottom:1px solid var(--border); }
+footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+.footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
+.footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
+.footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+.footer-column a { text-decoration:none; color:#666; }
+.footer-column a:hover { color:var(--ink); }
+.footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
         nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
         .logo { font-weight:600; letter-spacing:-0.5px; font-size:1.15rem; }
         .nav-links { list-style:none; display:flex; gap:1.8rem; }
@@ -41,8 +47,45 @@
 
         main { max-width:1400px; margin:0 auto; padding:2.5rem 2rem 3rem; }
         h1 { font-size:2.4rem; margin-bottom:0.6rem; }
-        .lead { color:var(--muted); margin-bottom:2rem; }
-
+        .lead { color:var(--muted); margin-bottom:1rem; }
+        .alert {
+            padding:0.9rem 1.1rem;
+            border-radius:12px;
+            margin-bottom:1.5rem;
+            font-weight:500;
+        }
+        .alert-success { background:#e6f5ef; color:#136b3a; border:1px solid #b7e2c9; }
+        .alert-error { background:#fdecea; color:#b5302c; border:1px solid #f3c0b7; }
+        .product-filters {
+            display:flex;
+            flex-wrap:wrap;
+            gap:1rem;
+            margin-bottom:2rem;
+            background:white;
+            padding:1rem 1.5rem;
+            border:1px solid var(--border);
+            border-radius:12px;
+        }
+        .product-filters label {
+            display:block;
+            font-weight:600;
+            font-size:0.9rem;
+            margin-bottom:0.3rem;
+        }
+        .product-filters input,
+        .product-filters select {
+            width:220px;
+            padding:0.6rem 0.8rem;
+            border:1px solid var(--border);
+            border-radius:10px;
+            font-size:0.95rem;
+        }
+        .product-filters input:focus,
+        .product-filters select:focus {
+            outline:none;
+            border-color:var(--accent);
+            box-shadow:0 0 0 3px rgba(255,92,53,0.15);
+        }
         .products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.2rem; }
         .product-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.3rem; display:flex; flex-direction:column; gap:0.6rem; }
         .product-image { width:100%; height:180px; border-radius:12px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:0.85rem; color:#999; overflow:hidden; cursor:pointer; }
@@ -53,12 +96,21 @@
         .stock-ok { color:#0f9d58; }
         .stock-low { color:#c7771a; }
         .stock-out { color:#c0392b; }
-        .product-footer { margin-top:auto; display:flex; justify-content:space-between; font-size:0.9rem; color:var(--muted); }
+        .product-bottom { margin-top:auto; display:flex; flex-direction:column; gap:0.8rem; }
+        .card-actions { display:flex; flex-direction:column; gap:0.4rem; }
+        .card-actions form { width:100%; }
+        .btn-add-cart { width:100%; border:none; border-radius:10px; background:var(--ink); color:white; font-weight:600; padding:0.65rem 1rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.95rem; transition:background 0.2s; text-decoration:none; }
+        .btn-add-cart:hover { background:#333; }
+        .btn-add-cart.disabled { background:#f0f0f0; color:#888; cursor:not-allowed; }
+        .product-footer { display:flex; justify-content:space-between; font-size:0.9rem; color:var(--muted); }
         .product-footer a { text-decoration:none; color:var(--accent); font-weight:600; }
 
         @media (max-width:600px) {
             nav { flex-direction:column; gap:0.8rem; }
             .nav-links { flex-wrap:wrap; justify-content:center; }
+            .product-filters { flex-direction:column; }
+            .product-filters input,
+            .product-filters select { width:100%; }
         }
     </style>
 </head>
@@ -77,7 +129,7 @@
             @auth
                 <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                 <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="#">🛒 Grozs</a>
+                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                     <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
@@ -99,11 +151,37 @@
     <h1>Produkti auto kopšanai</h1>
     <p class="lead">Atlasīti līdzekļi, lai Tavs auto izskatītos perfekti arī starp vizītēm servisā.</p>
 
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-error">{{ $errors->first() }}</div>
+    @endif
+
+    <div class="product-filters">
+        <div class="search-control">
+            <label for="productSearch">Meklēt nosaukumu</label>
+            <input type="text" id="productSearch" placeholder="Sāc rakstīt produktu nosaukumu...">
+        </div>
+        <div class="sort-control">
+            <label for="productSort">Kārtot pēc</label>
+            <select id="productSort">
+                <option value="name-asc">Alfabēta secībā (A-Z)</option>
+                <option value="name-desc">Alfabēta secībā (Z-A)</option>
+                <option value="price-asc">Cena: no zemākās</option>
+                <option value="price-desc">Cena: no augstākās</option>
+            </select>
+        </div>
+    </div>
+
     @if($products->count())
-        <div class="products-grid">
+        <div class="products-grid" id="productsGrid">
             @foreach($products as $product)
                 @php $inStock = $product->stock > 0; @endphp
-                <article class="product-card" data-product-id="{{ $product->id }}">
+                <article class="product-card"
+                         data-name="{{ Str::lower($product->name) }}"
+                         data-price="{{ $product->price }}"
+                         data-product-id="{{ $product->id }}">
                     <div class="product-image" onclick="window.location='{{ route('products.show', $product) }}'">
                         @if($product->image)
                             <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
@@ -127,9 +205,22 @@
                             Nav pieejams
                         @endif
                     </p>
-                    <div class="product-footer">
-                        <span>{{ $inStock ? 'Pieejams tūlītējai izsniegšanai' : 'Drīzumā pieejams' }}</span>
-                        <a href="{{ route('products.show', $product) }}">Detaļas →</a>
+                    <div class="product-bottom">
+                        <div class="card-actions">
+                            @auth
+                                <form method="POST" action="{{ route('cart.add', $product) }}">
+                                    @csrf
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn-add-cart">🛒 Pievienot grozam</button>
+                                </form>
+                            @else
+                                <a class="btn-add-cart disabled" href="{{ route('login') }}">Ieiet, lai pievienotu grozā</a>
+                            @endauth
+                        </div>
+                        <div class="product-footer">
+                            <span>{{ $inStock ? 'Pieejams tūlītējai izsniegšanai' : 'Drīzumā pieejams' }}</span>
+                            <a href="{{ route('products.show', $product) }}">Detaļas →</a>
+                        </div>
                     </div>
                 </article>
             @endforeach
@@ -140,7 +231,100 @@
 </main>
 
 <footer>
-    <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+    <div class="footer-wrapper">
+        <div class="footer-column">
+            <h4>Salons</h4>
+            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+        </div>
+        <div class="footer-column">
+            <h4>Kontakti</h4>
+            <ul>
+                <li>📞 +371 2000 0000</li>
+                <li>✉️ info@detailing.lv</li>
+                <li>WhatsApp & Telegram</li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Ātrās saites</h4>
+            <ul>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Sekojiet mums</h4>
+            <ul>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">YouTube</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+    </div>
 </footer>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('productSearch');
+        const sortSelect = document.getElementById('productSort');
+        const grid = document.getElementById('productsGrid');
+
+        if (!grid || !searchInput || !sortSelect) {
+            return;
+        }
+
+        const allCards = Array.from(grid.querySelectorAll('.product-card'));
+        let visibleCards = [...allCards];
+
+        const sortCards = () => {
+            const [criterion, direction] = sortSelect.value.split('-');
+            const sorted = [...visibleCards].sort((cardA, cardB) => {
+                if (criterion === 'name') {
+                    const nameA = cardA.dataset.name || '';
+                    const nameB = cardB.dataset.name || '';
+                    return direction === 'asc'
+                        ? nameA.localeCompare(nameB)
+                        : nameB.localeCompare(nameA);
+                }
+
+                const priceA = parseFloat(cardA.dataset.price) || 0;
+                const priceB = parseFloat(cardB.dataset.price) || 0;
+                return direction === 'asc' ? priceA - priceB : priceB - priceA;
+            });
+
+            sorted.forEach(card => grid.appendChild(card));
+        };
+
+        const filterCards = () => {
+            const query = searchInput.value.trim().toLowerCase();
+
+            visibleCards = allCards.filter(card => {
+                const productName = card.dataset.name || '';
+                return productName.includes(query);
+            });
+
+            allCards.forEach(card => {
+                card.style.display = 'none';
+            });
+
+            visibleCards.forEach(card => {
+                card.style.display = 'flex';
+            });
+
+            sortCards();
+        };
+
+        searchInput.addEventListener('input', filterCards);
+        sortSelect.addEventListener('change', sortCards);
+
+        // Initialize default view.
+        allCards.forEach(card => card.style.display = 'flex');
+        filterCards();
+    });
+</script>
 </body>
 </html>

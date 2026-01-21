@@ -60,7 +60,13 @@
         summary { cursor:pointer; font-weight:600; }
         summary::marker { color:var(--accent); }
         details p { margin-top:0.6rem; color:#555; }
-        footer { text-align:center; padding:3rem 2rem; color:#666; }
+        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
+        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
+        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+        .footer-column a { text-decoration:none; color:#666; }
+        .footer-column a:hover { color:var(--ink); }
+        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
         @media(max-width:640px){ nav { flex-direction:column; gap:0.8rem; } .nav-links { flex-wrap:wrap; justify-content:center; } }
     </style>
 </head>
@@ -79,7 +85,7 @@
             @auth
                 <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                 <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="#">🛒 Grozs</a>
+                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                     <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -100,39 +106,31 @@
 <main>
     <div class="hero">
         <h1>Pirms un Pēc projekti</h1>
-        <p>Ievieto savas „pirms / pēc” fotogrāfijas mapē <strong>public/images/our-work</strong> ar nosaukumiem, kas atbilst zemāk redzamajiem failiem.</p>
-        <p class="placeholder-note">Piemēram: <code>before1.jpg</code>, <code>after1.jpg</code>, ... , <code>before6.jpg</code>.</p>
     </div>
 
-    @php
-        $projects = [
-            ['title' => 'Pilns detailing – BMW 5. sērija', 'tag' => 'Exterior', 'before' => 'before1.jpg', 'after' => 'after1.jpg', 'text' => 'Spīduma atjaunošana un keramiskais pārklājums.'],
-            ['title' => 'Salona dziļā tīrīšana – VW Golf', 'tag' => 'Interior', 'before' => 'before2.jpg', 'after' => 'after2.jpg', 'text' => 'Traipu noņemšana un antibakteriālā apstrāde.'],
-            ['title' => 'Keramiskā aizsardzība – Audi A6', 'tag' => 'Coating', 'before' => 'before3.jpg', 'after' => 'after3.jpg', 'text' => 'Matēta virsbūve kļūst spīdīga un hidrofoba.'],
-            ['title' => 'Motora nodalījuma kopšana – Mini Cooper', 'tag' => 'Engine bay', 'before' => 'before4.jpg', 'after' => 'after4.jpg', 'text' => 'Motora telpa notīrīta un konservēta.'],
-            ['title' => 'Salona ādas atjaunošana – Volvo XC60', 'tag' => 'Leather care', 'before' => 'before5.jpg', 'after' => 'after5.jpg', 'text' => 'Ādas sēdekļi atjauno krāsu un elastību.'],
-            ['title' => 'Disku atjaunošana – Porsche Cayenne', 'tag' => 'Wheels', 'before' => 'before6.jpg', 'after' => 'after6.jpg', 'text' => 'Disku tīrīšana, pulēšana un aizsargvasks.'],
-        ];
-    @endphp
-
     <section class="grid">
-        @foreach($projects as $index => $project)
+        @forelse($workItems as $index => $item)
             <article class="work-card" data-slider-index="{{ $index }}">
-                <span class="tag">{{ $project['tag'] }}</span>
-                <h3 class="card-title">{{ $project['title'] }}</h3>
-                <p>{{ $project['text'] }}</p>
+                @if($item->tag)
+                    <span class="tag">{{ $item->tag }}</span>
+                @endif
+                <h3 class="card-title">{{ $item->title }}</h3>
+                @if($item->description)
+                    <p>{{ $item->description }}</p>
+                @endif
                 <div class="slider"
                      data-images='@json([
-                        asset("images/our-work/{$project['before']}"),
-                        asset("images/our-work/{$project['after']}")
+                        $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
+                        $item->after_image ? asset("storage/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
                      ])'>
-                    <img src="{{ asset("images/our-work/{$project['before']}") }}" alt="{{ $project['title'] }} foto">
+                    <img src="{{ $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
                     <button class="prev" type="button" aria-label="Iepriekšējais">&lt;</button>
                     <button class="next" type="button" aria-label="Nākamais">&gt;</button>
                 </div>
-                <p class="placeholder-note">* Aizvieto attēlus mapē <code>public/images/our-work/{{ $project['before'] }} / {{ $project['after'] }}</code></p>
             </article>
-        @endforeach
+        @empty
+            <p>Šobrīd nav pieejamu projektu. Drīzumā pievienosim!</p>
+        @endforelse
     </section>
 
     <section class="faq">
@@ -157,7 +155,41 @@
 </main>
 
 <footer>
-    <p>&copy; {{ date('Y') }} Auto Detailing Workshop</p>
+    <div class="footer-wrapper">
+        <div class="footer-column">
+            <h4>Salons</h4>
+            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+        </div>
+        <div class="footer-column">
+            <h4>Kontakti</h4>
+            <ul>
+                <li>📞 +371 2000 0000</li>
+                <li>✉️ info@detailing.lv</li>
+                <li>WhatsApp & Telegram</li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Ātrās saites</h4>
+            <ul>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Sekojiet mums</h4>
+            <ul>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">YouTube</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+    </div>
 </footer>
 
 <script>

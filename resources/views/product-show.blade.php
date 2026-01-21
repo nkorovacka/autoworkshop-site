@@ -39,6 +39,13 @@
         .btn-logout:hover { background:#dfdfdf; }
         .btn-add-cart { margin-top:0.5rem; padding:0.9rem 1.5rem; border-radius:12px; border:none; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; background:var(--ink); color:white; text-decoration:none; }
         .btn-add-cart.disabled { background:#e0e0e0; color:#777; cursor:not-allowed; }
+        .quantity-row { display:flex; align-items:center; gap:0.8rem; margin-top:0.5rem; }
+        .quantity-row label { font-weight:600; }
+        .quantity-row input { width:90px; padding:0.5rem; border-radius:10px; border:1px solid var(--border); }
+        .quantity-row input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,92,53,0.15); }
+        .flash { padding:0.9rem 1.1rem; border-radius:12px; margin:1rem 0; font-weight:500; }
+        .flash-success { background:#e6f5ef; color:#136b3a; border:1px solid #b7e2c9; }
+        .flash-error { background:#fdecea; color:#b5302c; border:1px solid #f3c0b7; }
 
         main { max-width:1400px; margin:0 auto; padding:2.5rem 2rem 3rem; }
         .hero-title { font-size:2.4rem; margin-bottom:0.4rem; }
@@ -63,6 +70,14 @@
 
         .back-link { display:inline-flex; align-items:center; gap:0.4rem; margin-top:2.5rem; text-decoration:none; color:var(--accent); font-weight:600; }
 
+        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
+        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
+        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+        .footer-column a { text-decoration:none; color:#666; }
+        .footer-column a:hover { color:var(--ink); }
+        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
+
         @media(max-width:680px){
             nav { flex-direction:column; gap:0.8rem; }
             .nav-links { flex-wrap:wrap; justify-content:center; }
@@ -86,7 +101,7 @@
             @auth
                 <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                 <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="#">🛒 Grozs</a>
+                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                     <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
@@ -108,6 +123,17 @@
     <h1 class="hero-title">{{ $product->name }}</h1>
     <p class="intro">Detalizēta informācija par produktu un tā pielietojumu.</p>
 
+    @if(session('success'))
+        <div class="flash flash-success">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="flash flash-error">{{ $errors->first() }}</div>
+    @endif
+
+    @php
+        $inStock = $product->stock > 0;
+        $maxQty = $inStock ? min($product->stock, 100) : 100;
+    @endphp
     <article class="product-card">
         <div class="product-media">
             <div class="image-frame" onclick="window.location='{{ route('products.show', $product) }}'">
@@ -121,8 +147,8 @@
         <div class="product-details">
             <div>
                 <p class="price">{{ number_format($product->price, 2) }} €</p>
-                <p class="{{ $product->stock > 0 ? ($product->stock <= 5 ? 'stock-low' : 'stock-ok') : 'stock-out' }}">
-                    @if($product->stock > 0)
+                <p class="{{ $inStock ? ($product->stock <= 5 ? 'stock-low' : 'stock-ok') : 'stock-out' }}">
+                    @if($inStock)
                         @if($product->stock <= 5)
                             Atliek {{ $product->stock }} gb
                         @else
@@ -158,11 +184,23 @@
             <div class="section">
                 <h3>Pievienot grozam</h3>
                 @auth
-                    <form method="POST" action="#">
-                        @csrf
-                        <button type="button" class="btn-add-cart">🛒 Pievienot grozam</button>
-                        <p style="color:#777; margin-top:0.4rem;">(Groza funkcionalitāte tiks piesaistīta vēlāk.)</p>
-                    </form>
+                    @if($inStock)
+                        <form method="POST" action="{{ route('cart.add', $product) }}">
+                            @csrf
+                            <div class="quantity-row">
+                                <label for="quantity">Daudzums</label>
+                                <input type="number"
+                                       id="quantity"
+                                       name="quantity"
+                                       min="1"
+                                       max="{{ $maxQty }}"
+                                       value="1">
+                            </div>
+                            <button type="submit" class="btn-add-cart">🛒 Pievienot grozam</button>
+                        </form>
+                    @else
+                        <p style="color:#b5302c;">Šobrīd nav iespējams pievienot grozam (produkts nav noliktavā).</p>
+                    @endif
                 @else
                     <a class="btn-add-cart disabled" href="{{ route('login') }}">Ieiet, lai pievienotu grozā</a>
                 @endauth
@@ -174,7 +212,41 @@
 </main>
 
 <footer>
-    <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+    <div class="footer-wrapper">
+        <div class="footer-column">
+            <h4>Salons</h4>
+            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+        </div>
+        <div class="footer-column">
+            <h4>Kontakti</h4>
+            <ul>
+                <li>📞 +371 2000 0000</li>
+                <li>✉️ info@detailing.lv</li>
+                <li>WhatsApp & Telegram</li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Ātrās saites</h4>
+            <ul>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Sekojiet mums</h4>
+            <ul>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">YouTube</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+    </div>
 </footer>
 </body>
 </html>

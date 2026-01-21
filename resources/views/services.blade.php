@@ -65,7 +65,13 @@
         .cta p { opacity:0.9; margin-top:0.5rem; }
         .cta a { display:inline-block; margin-top:1.2rem; padding:0.9rem 1.8rem; border-radius:12px; background:white; color:var(--ink); text-decoration:none; font-weight:600; }
 
-        footer { max-width:1400px; margin:0 auto; padding:2.5rem 2rem; text-align:center; color:var(--muted); }
+        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
+        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
+        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+        .footer-column a { text-decoration:none; color:#666; }
+        .footer-column a:hover { color:var(--ink); }
+        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
 
         @media (max-width:768px) {
             .nav-links, .nav-right { display:none; }
@@ -90,7 +96,7 @@
             @auth
                 <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                 <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="#">🛒 Grozs</a>
+                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                     <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
@@ -110,123 +116,32 @@
 
 <section class="intro">
     <h1>Pakalpojumu katalogs un cenas</h1>
-    <p>Vienkārši apskati pakalpojumu aprakstus, iekļautos darbus un cenu sākot no. Katram pakalpojumam norādām paredzamo izpildes laiku un to, kas iekļauts komplektā.</p>
+    <p>Apskati pakalpojumu aprakstus, iekļautos darbus un cenu sākot no. Katram pakalpojumam norādām, kas iekļauts komplektā.</p>
 </section>
 
 <section class="services-grid">
-    <article class="service-card">
-        <h2>Ārējā mazgāšana</h2>
-        <small>No €30 · 1 stunda</small>
-        <p>Rūpīga virsbūves mazgāšana, disku un riepu kopšana, hidrofobs vasks.</p>
-        <ul>
-            <li>Divpakāpju mazgāšana</li>
-            <li>Stiklu un spoguļu pulēšana</li>
-            <li>Foto atskaite pēc darba</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'exterior']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
-    <article class="service-card">
-        <h2>Salona ķīmiskā tīrīšana</h2>
-        <small>No €45 · 2 stundas</small>
-        <p>Dziļa salona tīrīšana, antibakteriāla apstrāde, aromāta izvēle.</p>
-        <ul>
-            <li>Sēdekļu un grīdas tīrīšana</li>
-            <li>Ādas kopšana pēc izvēles</li>
-            <li>UV aizsardzība paneļiem</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'interior']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
-    <article class="service-card">
-        <h2>Virsbūves pulēšana</h2>
-        <small>No €80 · 3-4 stundas</small>
-        <p>Profesionāla vairāku posmu pulēšana krāsas atjaunošanai.</p>
-        <ul>
-            <li>Krāsas biezuma mērījumi</li>
-            <li>2-3 pakāpju pulēšana</li>
-            <li>Keramiskā primēšana</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'polish']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
-    <article class="service-card">
-        <h2>Keramiskā aizsardzība</h2>
-        <small>No €150 · 6-8 stundas</small>
-        <p>Premium nano keramika ar 24 mēnešu garantiju un kontrolēm.</p>
-        <ul>
-            <li>Sagatavošana un pulēšana</li>
-            <li>2 slāņu pārklājums</li>
-            <li>Pēcapkalpošanas instrukcijas</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'ceramic']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
-    <article class="service-card">
-        <h2>Pilns detailing</h2>
-        <small>No €120 · 5-6 stundas</small>
-        <p>Ārējā kopšana, salona tīrīšana, disku un motora detaļu kopšana vienā vizītē.</p>
-        <ul>
-            <li>Visa ārējā kopšana</li>
-            <li>Pilna salona tīrīšana</li>
-            <li>Motora nodalījuma mazgāšana</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'full']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
-    <article class="service-card">
-        <h2>VIP programma</h2>
-        <small>No €250 · 8-10 stundas</small>
-        <p>Premium komplekts ar keramiku, lukturu pulēšanu un pēc-kopšanas box.</p>
-        <ul>
-            <li>Visa Pilnā programma + keramika</li>
-            <li>Ādas kopšana un kondicionēšana</li>
-            <li>Privāts konsultants</li>
-        </ul>
-        @auth
-            <button onclick="location.href='{{ route('booking.create', ['service' => 'vip']) }}'">Pieteikties</button>
-        @else
-            <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
-        @endauth
-    </article>
+    @foreach($services as $service)
+        <article class="service-card">
+            <div class="icon" style="font-size:1.8rem;">{{ $service->icon }}</div>
+            <h2>{{ $service->name }}</h2>
+            <small>No €{{ number_format($service->base_price, 0) }}</small>
+            <p>{{ $service->description }}</p>
+            @if(!empty($service->features))
+                <ul>
+                    @foreach($service->features as $feature)
+                        <li>{{ $feature }}</li>
+                    @endforeach
+                </ul>
+            @endif
+            @auth
+                <button onclick="location.href='{{ route('booking.create', ['service' => $service->slug]) }}'">Pieteikties</button>
+            @else
+                <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
+            @endauth
+        </article>
+    @endforeach
 </section>
 
-<section class="packages">
-    <h2>Komplekti ar fiksētu cenu</h2>
-    <p>Izvēlies gatavu komplektu un saņem prioritāru grafiku.</p>
-    <div class="package-grid">
-        <div class="package">
-            <span>Neon Copper</span>
-            <h3>€420</h3>
-            <p>Polēšana + keramika ar vara akcentu. 24 mēn. garantija.</p>
-        </div>
-        <div class="package">
-            <span>Midnight Interior</span>
-            <h3>€210</h3>
-            <p>Salona dziļā tīrīšana, ādas kopšana, UV aizsardzība.</p>
-        </div>
-        <div class="package">
-            <span>Full Spectrum</span>
-            <h3>€590</h3>
-            <p>Pilns detailing ar keramiku, lukturu pulēšanu un pēc-kopšanas komplektu.</p>
-        </div>
-    </div>
-</section>
 
 <section class="cta">
     <h2>Kuru pakalpojumu izvēlies?</h2>
@@ -235,7 +150,41 @@
 </section>
 
 <footer>
-    <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+    <div class="footer-wrapper">
+        <div class="footer-column">
+            <h4>Salons</h4>
+            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+        </div>
+        <div class="footer-column">
+            <h4>Kontakti</h4>
+            <ul>
+                <li>📞 +371 2000 0000</li>
+                <li>✉️ info@detailing.lv</li>
+                <li>WhatsApp & Telegram</li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Ātrās saites</h4>
+            <ul>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h4>Sekojiet mums</h4>
+            <ul>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">YouTube</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+    </div>
 </footer>
 </body>
 </html>

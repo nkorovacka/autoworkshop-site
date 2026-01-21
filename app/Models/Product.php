@@ -13,6 +13,7 @@ class Product extends Model
         'image',
 
         'stock',
+        'is_visible',
         'supplier',
         'origin_country',
         'usage_instructions',

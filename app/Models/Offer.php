@@ -9,6 +9,7 @@ class Offer extends Model
     protected $fillable = [
         'title',
         'type',                 // 'webinar' vai 'detailing'
+        'format',
         'description',
         'event_date',
         'is_limited',

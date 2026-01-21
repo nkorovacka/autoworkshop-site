@@ -288,27 +288,37 @@
             background: linear-gradient(135deg, var(--accent-light) 0%, #fff 100%);
         }
 
-        .offer-type {
+        .offer-meta {
+            display:flex;
+            gap:0.5rem;
+            flex-wrap:wrap;
+            margin-bottom:1rem;
+        }
+
+        .offer-type,
+        .offer-format {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 1rem;
-            background: white;
+            gap: 0.4rem;
+            padding: 0.35rem 1rem;
             border-radius: 999px;
             font-size: 0.85rem;
             font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 1rem;
         }
 
-        .offer-type.webinar {
+        .offer-type {
             background: var(--accent);
             color: white;
         }
 
-        .offer-type.detailing {
-            background: var(--ink);
-            color: white;
+        .offer-format {
+            background:#edf2ff;
+            color:#1c3faa;
+        }
+
+        .offer-format.in-person {
+            background:#e6f5ef;
+            color:#136b3a;
         }
 
         .offer-card h3 {
@@ -553,11 +563,51 @@
         }
 
         footer {
+            background: white;
+            border-top: 1px solid #e8e8e8;
+            margin-top: 4rem;
+        }
+
+        .footer-wrapper {
             max-width: 1400px;
             margin: 0 auto;
             padding: 3rem 2rem;
-            text-align: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            color: #555;
+        }
+
+        .footer-column h4 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            color: var(--ink);
+            margin-bottom: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .footer-column a {
+            text-decoration: none;
             color: #666;
+        }
+
+        .footer-column a:hover {
+            color: var(--ink);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 1.5rem;
+            color: #777;
+            font-size: 0.9rem;
+            border-top: 1px solid #f0f0f0;
         }
     </style>
 </head>
@@ -576,7 +626,7 @@
                 @auth
                     <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                     <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="#">🛒 Grozs</a>
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                         <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                         <form method="POST" action="{{ route('logout') }}" class="logout-form">
                             @csrf
@@ -601,9 +651,9 @@
 
     <!-- Filter Tabs -->
     <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">Visi piedāvājumi</button>
-        <button class="filter-tab" data-filter="webinar">Vebināri</button>
-        <button class="filter-tab" data-filter="detailing">Detailing akcijas</button>
+        <button class="filter-tab active" data-filter="all">Visi vebināri</button>
+        <button class="filter-tab" data-filter="online">Tiešsaistes lekcijas</button>
+        <button class="filter-tab" data-filter="in_person">Klātienes pasākumi</button>
     </div>
 
     <!-- Messages -->
@@ -639,11 +689,16 @@
                             ? \Carbon\Carbon::parse($offer->event_date)->locale('lv')->translatedFormat('d. F H:i')
                             : null;
                     @endphp
-                    <div class="offer-card" data-type="{{ $offer->type }}">
+                    <div class="offer-card"
+                         data-type="{{ $offer->type }}"
+                         data-format="{{ $offer->format ?? 'online' }}">
                         <div class="offer-header">
-                            <span class="offer-type {{ $offer->type }}">
-                                {{ $offer->type === 'webinar' ? '🎥 Vebinārs' : '✨ Detailing' }}
-                            </span>
+                            <div class="offer-meta">
+                                <span class="offer-type">🎥 Vebinārs</span>
+                                <span class="offer-format {{ ($offer->format ?? 'online') === 'in_person' ? 'in-person' : 'online' }}">
+                                    {{ ($offer->format ?? 'online') === 'in_person' ? '👥 Klātienē' : '💻 Tiešsaistē' }}
+                                </span>
+                            </div>
                             <h3>{{ $offer->title }}</h3>
                             @if($eventDate)
                                 <div class="offer-date">
@@ -665,27 +720,20 @@
                             @endif
                         </div>
                         <div class="offer-footer">
-                            @if($offer->type === 'webinar')
-                                @auth
-                                    <button type="button"
-                                            class="offer-btn webinar webinar-trigger"
-                                            data-offer-id="{{ $offer->id }}"
-                                            data-offer-title="{{ $offer->title }}"
-                                            data-offer-action="{{ route('offers.signup', $offer) }}"
-                                            {{ $isFull ? 'disabled' : '' }}>
-                                        {{ $isFull ? 'Pilns' : 'Pieteikties vebināram' }}
-                                    </button>
-                                @else
-                                    <a class="offer-btn webinar" href="{{ route('login') }}">
-                                        Ieiet, lai pieteiktos
-                                    </a>
-                                @endauth
+                            @auth
+                                <button type="button"
+                                        class="offer-btn webinar webinar-trigger"
+                                        data-offer-id="{{ $offer->id }}"
+                                        data-offer-title="{{ $offer->title }}"
+                                        data-offer-action="{{ route('offers.signup', $offer) }}"
+                                        {{ $isFull ? 'disabled' : '' }}>
+                                    {{ $isFull ? 'Pilns' : 'Pieteikties vebināram' }}
+                                </button>
                             @else
-                                <a class="offer-btn"
-                                   href="{{ route('booking.create', ['offer' => $offer->id]) }}">
-                                    Rezervēt ar atlaidi
+                                <a class="offer-btn webinar" href="{{ route('login') }}">
+                                    Ieiet, lai pieteiktos
                                 </a>
-                            @endif
+                            @endauth
                         </div>
                     </div>
                 @endforeach
@@ -703,11 +751,21 @@
                 <input type="hidden" id="modalOfferId" name="offer_id">
                 <div class="form-field">
                     <label for="modalName">Vārds, Uzvārds *</label>
-                    <input type="text" id="modalName" name="name" required>
+                    <input type="text"
+                           id="modalName"
+                           name="name"
+                           value="@auth{{ auth()->user()->name }}@endauth"
+                           {{ auth()->check() ? 'readonly' : '' }}
+                           required>
                 </div>
                 <div class="form-field">
                     <label for="modalEmail">E-pasts *</label>
-                    <input type="email" id="modalEmail" name="email" required>
+                    <input type="email"
+                           id="modalEmail"
+                           name="email"
+                           value="@auth{{ auth()->user()->email }}@endauth"
+                           {{ auth()->check() ? 'readonly' : '' }}
+                           required>
                 </div>
                 <button type="submit" class="modal-submit">Pieteikties</button>
             </form>
@@ -715,7 +773,41 @@
     </div>
 
     <footer>
-        <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+        <div class="footer-wrapper">
+            <div class="footer-column">
+                <h4>Salons</h4>
+                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+            </div>
+            <div class="footer-column">
+                <h4>Kontakti</h4>
+                <ul>
+                    <li>📞 +371 2000 0000</li>
+                    <li>✉️ info@detailing.lv</li>
+                    <li>WhatsApp & Telegram</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Ātrās saites</h4>
+                <ul>
+                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Sekojiet mums</h4>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+        </div>
     </footer>
 
     <script>
@@ -732,7 +824,12 @@
 
                 offerCards.forEach(card => {
                     if (!card) return;
-                    if (filter === 'all' || card.dataset.type === filter) {
+                    const format = card.dataset.format || 'online';
+                    const show = filter === 'all'
+                        || (filter === 'online' && format === 'online')
+                        || (filter === 'in_person' && format === 'in_person');
+
+                    if (show) {
                         card.style.display = 'flex';
                         visibleCount++;
                     } else {
@@ -750,12 +847,31 @@
         const registrationForm = document.getElementById('registrationForm');
         const modalTitle = document.getElementById('modalTitle');
         const modalOfferId = document.getElementById('modalOfferId');
+        const modalName = document.getElementById('modalName');
+        const modalEmail = document.getElementById('modalEmail');
+        const currentUser = {
+            name: @json(auth()->check() ? auth()->user()->name : null),
+            email: @json(auth()->check() ? auth()->user()->email : null),
+        };
+
+        function fillUserData() {
+            if (modalName && currentUser.name) {
+                modalName.value = currentUser.name;
+                modalName.readOnly = true;
+            }
+            if (modalEmail && currentUser.email) {
+                modalEmail.value = currentUser.email;
+                modalEmail.readOnly = true;
+            }
+        }
+        fillUserData();
 
         document.querySelectorAll('.webinar-trigger').forEach(btn => {
             btn.addEventListener('click', () => {
                 modalTitle.textContent = `Pieteikties: ${btn.dataset.offerTitle}`;
                 modalOfferId.value = btn.dataset.offerId;
                 registrationForm.action = btn.dataset.offerAction;
+                fillUserData();
                 registrationModal.classList.add('active');
             });
         });
@@ -763,6 +879,7 @@
         function closeModal() {
             registrationModal.classList.remove('active');
             registrationForm.reset();
+            fillUserData();
         }
 
         window.closeModal = closeModal;

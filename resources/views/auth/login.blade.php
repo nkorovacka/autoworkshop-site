@@ -350,7 +350,7 @@
                 @auth
                     <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                     <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="#">🛒 Grozs</a>
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                         <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     </div>
                 @else

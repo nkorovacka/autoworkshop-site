@@ -367,8 +367,17 @@
         .summary-item {
             display: flex;
             justify-content: space-between;
+            gap: 0.75rem;
             padding: 0.8rem 0;
             border-bottom: 1px solid #f0f0f0;
+        }
+
+        .summary-item span:first-child {
+            flex: 0 0 auto;
+        }
+
+        .summary-item span:last-child {
+            text-align: right;
         }
 
         .summary-item:last-child {
@@ -475,11 +484,51 @@
         }
 
         footer {
+            background: white;
+            border-top: 1px solid #e8e8e8;
+            margin-top: 4rem;
+        }
+
+        .footer-wrapper {
             max-width: 1400px;
             margin: 0 auto;
             padding: 3rem 2rem;
-            text-align: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            color: #555;
+        }
+
+        .footer-column h4 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            color: var(--ink);
+            margin-bottom: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .footer-column a {
+            text-decoration: none;
             color: #666;
+        }
+
+        .footer-column a:hover {
+            color: var(--ink);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 1.5rem;
+            color: #777;
+            font-size: 0.9rem;
+            border-top: 1px solid #f0f0f0;
         }
     </style>
 </head>
@@ -499,7 +548,7 @@
                 @auth
                     <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                     <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="#">🛒 Grozs</a>
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                         <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                     </div>
                 @else
@@ -526,12 +575,33 @@
         </div>
 
         <!-- Messages -->
-        <div id="messages"></div>
+        <div id="messages">
+            @if(session('success'))
+                <div class="message success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="message error">{{ session('error') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="message error">
+                    <ul style="margin:0; padding-left:1.2rem;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
 
         <div class="booking-layout">
             <!-- Main Form -->
             <div class="booking-form">
-                <form id="bookingForm">
+                <form id="bookingForm" method="POST" action="{{ route('booking.store') }}">
+                    @csrf
+                    <input type="hidden" id="totalField" name="total" value="{{ old('total', '0') }}">
+                    @if($offer)
+                        <input type="hidden" name="offer_id" value="{{ $offer->id }}">
+                    @endif
                     <!-- Personal Information -->
                     <div class="form-section">
                         <h3 class="section-title">
@@ -566,33 +636,75 @@
                             Auto informācija
                         </h3>
                         <div class="form-grid">
-                            <div class="form-field">
-                                <label for="car">Auto modelis *</label>
-                                <input type="text" id="car" name="car" placeholder="piem., VW Golf" required>
-                            </div>
-                            <div class="form-field">
-                                <label for="carSize">Auto izmērs *</label>
-                                <select id="carSize" required>
-                                    <option value="">-- Izvēlies --</option>
-                                    <option value="1">Mazs (Polo, Fiesta)</option>
-                                    <option value="1.2">Vidējs (Golf, A4)</option>
-                                    <option value="1.5">Liels / SUV</option>
-                                    <option value="2">Busiņš</option>
-                                </select>
+                            <div class="form-field" style="grid-column: span 2;">
+                                @php
+                                    $oldCarValue = old('car');
+                                    $oldCarLabel = '';
+                                    if ($oldCarValue) {
+                                        $matchedVehicle = collect($vehicles)->firstWhere('name', $oldCarValue);
+                                        $oldCarLabel = $matchedVehicle['label'] ?? $oldCarValue;
+                                    }
+                                @endphp
+                                <label for="carDisplay">Auto modelis *</label>
+                                <input type="text"
+                                       id="carDisplay"
+                                       list="carSuggestions"
+                                       placeholder="Sāc rakstīt modeli..."
+                                       autocomplete="off"
+                                       style="margin-bottom: 0.5rem;"
+                                       value="{{ $oldCarLabel }}"
+                                       required>
+                                <datalist id="carSuggestions">
+                                    @foreach($vehicles as $vehicle)
+                                        <option value="{{ $vehicle['label'] ?? $vehicle['name'] }}"
+                                                data-name="{{ $vehicle['name'] }}"
+                                                data-multiplier="{{ $vehicle['multiplier'] }}"></option>
+                                    @endforeach
+                                </datalist>
+                                <input type="hidden" id="car" name="car" value="{{ $oldCarValue }}">
+                                <small style="color:#777;">Sāc rakstīt, lai atrastu savu modeli.</small>
                             </div>
                         </div>
-                        <div class="form-field">
-                            <label for="condition">Auto stāvoklis *</label>
-                            <select id="condition" name="condition" required>
-                                <option value="">-- Izvēlies --</option>
-                                <option value="normal">Normāls</option>
-                                <option value="dirty">Ļoti netīrs (+10%)</option>
-                                <option value="very_dirty">Ekstremāli netīrs (+25%)</option>
-                            </select>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="bodyCondition">Auto virsbūves stāvoklis *</label>
+                                <select id="bodyCondition" name="condition" required>
+                                    <option value="">-- Izvēlies --</option>
+                                    <option value="normal" @selected(old('condition') === 'normal')>Normāls</option>
+                                    <option value="dirty" @selected(old('condition') === 'dirty')>Ļoti netīrs (+10%)</option>
+                                    <option value="very_dirty" @selected(old('condition') === 'very_dirty')>Ekstremāli netīrs (+25%)</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="interiorMaterial">Salona materiāls</label>
+                                <select id="interiorMaterial" name="interior_material">
+                                    <option value="">-- Izvēlies --</option>
+                                    <option value="fabric" @selected(old('interior_material') === 'fabric')>Audums / kombinēts</option>
+                                    <option value="leather" @selected(old('interior_material') === 'leather')>Āda (+10%)</option>
+                                    <option value="alcantara" @selected(old('interior_material') === 'alcantara')>Premium āda / Alcantara (+15%)</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="interiorCondition">Salona stāvoklis</label>
+                                <select id="interiorCondition" name="interior_condition" disabled>
+                                    <option value="">-- Izvēlies --</option>
+                                    <option value="fresh" @selected(old('interior_condition') === 'fresh')>Labi kopts</option>
+                                    <option value="used" @selected(old('interior_condition') === 'used')>Vidēji nolietots (+10%)</option>
+                                    <option value="dirty" @selected(old('interior_condition') === 'dirty')>Ļoti netīrs (+20%)</option>
+                                </select>
+                                <small style="color:#777;">Salona stāvokli var izvēlēties pēc materiāla izvēles. Šī informācija kļūst obligāta, ja izvēlies salona dziļo tīrīšanu, pilnu detailing komplektu vai VIP programmu.</small>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Date & Time -->
+                    @php
+                        $isOfferSchedule = $offer && $offer->type === 'detailing' && $offer->has_timeslots;
+                        $minDate = $minBookingDate ?? \Carbon\Carbon::tomorrow()->format('Y-m-d');
+                        $defaultDateValue = $isOfferSchedule
+                            ? ($offer->event_date ?? '')
+                            : old('date', $minDate);
+                    @endphp
                     <div class="form-section">
                         <h3 class="section-title">
                             <span class="section-icon">📅</span>
@@ -601,15 +713,57 @@
                         <div class="form-grid">
                             <div class="form-field">
                                 <label for="date">Datums *</label>
-                                <input type="date" id="date" name="date" required>
+                                @if($isOfferSchedule && !empty($offer->event_date))
+                                    <input type="date"
+                                           id="date"
+                                           name="date"
+                                           value="{{ $defaultDateValue }}"
+                                           readonly
+                                           required>
+                                    <small style="color:#777;">Datums fiksēts: {{ \Carbon\Carbon::parse($offer->event_date)->format('d.m.Y') }}</small>
+                                @else
+                                    <input type="date"
+                                           id="date"
+                                           name="date"
+                                           value="{{ $defaultDateValue }}"
+                                           min="{{ $minDate }}"
+                                           required>
+                                    <small style="color:#777;">Rezervācijas pieejamas tikai darba dienās un sākot ar rītdienu.</small>
+                                @endif
                             </div>
                             <div class="form-field">
                                 <label for="time">Laiks *</label>
-                                <input type="time" id="time" name="time" required>
+                                @if($isOfferSchedule && !empty($timeSlots))
+                                    <select id="time" name="time" required>
+                                        <option value="">-- Izvēlies laiku --</option>
+                                        @foreach($timeSlots as $slot)
+                                            @php
+                                                $taken = in_array($slot, $takenSlots ?? []);
+                                                $selected = old('time') === $slot;
+                                            @endphp
+                                            <option value="{{ $slot }}"
+                                                    {{ $selected ? 'selected' : '' }}
+                                                    {{ $taken ? 'disabled' : '' }}>
+                                                {{ $slot }}{{ $taken ? ' (aizņemts)' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @if(!empty($takenSlots))
+                                        <small style="color:#777;">Pelēkie laiki jau ir aizņemti.</small>
+                                    @endif
+                                @else
+                                    <select id="time" name="time" required>
+                                        <option value="">-- Izvēlies laiku --</option>
+                                        @foreach($generalTimeSlots as $slot)
+                                            <option value="{{ $slot }}" @selected(old('time') === $slot)>{{ $slot }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small style="color:#777;">Pieejami laiki darba dienās: 9:00, 11:00, 13:00, 15:00, 17:00 un 19:00.</small>
+                                @endif
                             </div>
                         </div>
                         <div class="info-box">
-                            💡 Ieteicams rezervēt vismaz 2 dienas iepriekš. Darba laiks: P-Pk 9:00-18:00, S 10:00-16:00
+                            💡 Ieteicams rezervēt vismaz 2 dienas iepriekš. Darba laiks: Pirmdiena-Piektdiena 9:00-19:00 (brīvdienās slēgts).
                         </div>
                     </div>
 
@@ -619,39 +773,28 @@
                             <span class="section-icon">✨</span>
                             Izvēlies pakalpojumus
                         </h3>
-                        <div class="services-grid">
-                            <div class="service-option">
-                                <input type="checkbox" id="service-exterior" name="services[]" value="exterior" data-price="30">
-                                <label for="service-exterior" class="service-label">
-                                    <div class="icon">🧽</div>
-                                    <div class="name">Ārējā mazgāšana</div>
-                                    <div class="price">no €30</div>
-                                </label>
-                            </div>
-                            <div class="service-option">
-                                <input type="checkbox" id="service-interior" name="services[]" value="interior" data-price="45">
-                                <label for="service-interior" class="service-label">
-                                    <div class="icon">🪑</div>
-                                    <div class="name">Salona tīrīšana</div>
-                                    <div class="price">no €45</div>
-                                </label>
-                            </div>
-                            <div class="service-option">
-                                <input type="checkbox" id="service-polish" name="services[]" value="polishing" data-price="80">
-                                <label for="service-polish" class="service-label">
-                                    <div class="icon">💎</div>
-                                    <div class="name">Pulēšana</div>
-                                    <div class="price">no €80</div>
-                                </label>
-                            </div>
-                            <div class="service-option">
-                                <input type="checkbox" id="service-ceramic" name="services[]" value="ceramic" data-price="150">
-                                <label for="service-ceramic" class="service-label">
-                                    <div class="icon">🛡️</div>
-                                    <div class="name">Keramiskā aizsardzība</div>
-                                    <div class="price">no €150</div>
-                                </label>
-                            </div>
+                        <div class="services-grid" id="servicesGrid">
+                            @foreach($services as $service)
+                                @php
+                                    $inputId = 'service-' . $service->slug;
+                                @endphp
+                                <div class="service-option">
+                                    <input type="checkbox"
+                                           id="{{ $inputId }}"
+                                           name="services[]"
+                                           value="{{ $service->slug }}"
+                                           data-price="{{ $service->base_price }}"
+                                           data-name="{{ $service->name }}">
+                                    <label for="{{ $inputId }}" class="service-label">
+                                        <div class="icon">{{ $service->icon ?? '✨' }}</div>
+                                        <div class="name">{{ $service->name }}</div>
+                                        <div class="price">no €{{ number_format($service->base_price, 0) }}</div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="info-box" style="margin-top: 1rem;">
+                            💡 Pilns detailing komplekts un VIP programma ir pilni pakalpojumu komplekti, tāpēc tos nevar apvienot ar citiem pakalpojumiem.
                         </div>
                     </div>
                 </form>
@@ -668,8 +811,16 @@
                             <span id="summaryCar">Nav izvēlēts</span>
                         </div>
                         <div class="summary-item">
-                            <span>Stāvoklis</span>
-                            <span id="summaryCondition">Nav izvēlēts</span>
+                            <span>Virsbūves stāvoklis</span>
+                            <span id="summaryBodyCondition">Nav izvēlēts</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Salona materiāls</span>
+                            <span id="summaryInteriorMaterial">Nav izvēlēts</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Salona stāvoklis</span>
+                            <span id="summaryInteriorCondition">Nav izvēlēts</span>
                         </div>
                         <div class="summary-item">
                             <span>Pakalpojumi</span>
@@ -698,65 +849,245 @@
     </div>
 
     <footer>
-        <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+        <div class="footer-wrapper">
+            <div class="footer-column">
+                <h4>Salons</h4>
+                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+            </div>
+            <div class="footer-column">
+                <h4>Kontakti</h4>
+                <ul>
+                    <li>📞 +371 2000 0000</li>
+                    <li>✉️ info@detailing.lv</li>
+                    <li>WhatsApp & Telegram</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Ātrās saites</h4>
+                <ul>
+                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Sekojiet mums</h4>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+        </div>
     </footer>
 
     <script>
         // Price Calculator
-        const carSizeSelect = document.getElementById('carSize');
-        const conditionSelect = document.getElementById('condition');
+        const bookingForm = document.getElementById('bookingForm');
+        const totalField = document.getElementById('totalField');
+        const carHiddenInput = document.getElementById('car');
+        const carDisplayInput = document.getElementById('carDisplay');
+        const carSuggestionData = Array.from(document.querySelectorAll('#carSuggestions option')).map(option => {
+            const label = (option.value || '').trim();
+            const name = (option.dataset.name || label).trim();
+            const multiplier = parseFloat(option.dataset.multiplier) || 1;
+            return {
+                label,
+                name,
+                multiplier,
+                labelLower: label.toLowerCase(),
+                nameLower: name.toLowerCase(),
+            };
+        });
+        let selectedCar = null;
+        const bodyConditionSelect = document.getElementById('bodyCondition');
+        const interiorMaterialSelect = document.getElementById('interiorMaterial');
+        const interiorConditionSelect = document.getElementById('interiorCondition');
         const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]');
+        const exclusiveServiceSlugs = ['pilns-detailing-komplekts', 'vip-programma'];
+        const interiorServiceSlugs = ['salona-dzila-tirisana', 'pilns-detailing-komplekts', 'vip-programma'];
+        const bodyConditionMultipliers = {
+            normal: 1,
+            dirty: 1.1,
+            very_dirty: 1.25,
+        };
+        const interiorMaterialMultipliers = {
+            fabric: 1,
+            leather: 1.1,
+            alcantara: 1.15,
+        };
+        const interiorConditionMultipliers = {
+            fresh: 1,
+            used: 1.1,
+            dirty: 1.2,
+        };
         const totalPriceEl = document.getElementById('totalPrice');
         
         // Summary elements
         const summaryCarEl = document.getElementById('summaryCar');
-        const summaryConditionEl = document.getElementById('summaryCondition');
+        const summaryBodyConditionEl = document.getElementById('summaryBodyCondition');
+        const summaryInteriorMaterialEl = document.getElementById('summaryInteriorMaterial');
+        const summaryInteriorConditionEl = document.getElementById('summaryInteriorCondition');
         const summaryServicesEl = document.getElementById('summaryServices');
         const summaryDateEl = document.getElementById('summaryDate');
+        const dateField = document.getElementById('date');
+        const timeField = document.getElementById('time');
+        const usesOfferSchedule = @json($isOfferSchedule);
+        const minBookingDate = @json($isOfferSchedule ? null : $minDate);
+        const generalBookedSlots = @json($generalBookedSlots);
+
+        function getSelectedServiceSlugs() {
+            return Array.from(serviceCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+        }
+
+        function requiresInteriorDetails() {
+            return getSelectedServiceSlugs().some(slug => interiorServiceSlugs.includes(slug));
+        }
+
+        function hasBaseVehicleDetails() {
+            return Boolean(carHiddenInput.value && bodyConditionSelect?.value);
+        }
+
+        function hasInteriorDetails() {
+            return Boolean(interiorMaterialSelect?.value && interiorConditionSelect?.value);
+        }
+
+        function hasAllRequiredVehicleDetails() {
+            if (!hasBaseVehicleDetails()) return false;
+            if (requiresInteriorDetails() && !hasInteriorDetails()) return false;
+            return true;
+        }
+
+        function updateInteriorRequirementState() {
+            const required = requiresInteriorDetails();
+            if (interiorMaterialSelect) {
+                interiorMaterialSelect.required = required;
+            }
+            if (interiorConditionSelect) {
+                interiorConditionSelect.required = required;
+                if (!required) {
+                    interiorConditionSelect.disabled = !interiorMaterialSelect?.value;
+                }
+            }
+        }
+
+        function updateGeneralTimeAvailability() {
+            if (usesOfferSchedule || !timeField) {
+                return;
+            }
+
+            const selectedDate = dateField?.value;
+            const takenList = selectedDate && generalBookedSlots[selectedDate]
+                ? generalBookedSlots[selectedDate]
+                : [];
+
+            let selectionCleared = false;
+
+            Array.from(timeField.options).forEach(option => {
+                if (!option.value) {
+                    return;
+                }
+                const isTaken = takenList.includes(option.value);
+                option.disabled = isTaken;
+                option.textContent = option.value + (isTaken ? ' (aizņemts)' : '');
+
+                if (isTaken && option.selected) {
+                    option.selected = false;
+                    selectionCleared = true;
+                }
+            });
+
+            if (!selectedDate) {
+                Array.from(timeField.options).forEach(option => {
+                    if (!option.value) return;
+                    option.disabled = false;
+                    option.textContent = option.value;
+                });
+            }
+
+            if (selectionCleared) {
+                timeField.value = '';
+                showMessage('Šis laiks tika rezervēts. Lūdzu izvēlies citu pieejamo laiku.', 'error');
+            }
+        }
 
         function calculateTotal() {
             let basePrice = 0;
             let selectedCount = 0;
+            let selectedNames = [];
 
             // Get selected services
             serviceCheckboxes.forEach(cb => {
                 if (cb.checked) {
                     basePrice += parseFloat(cb.dataset.price);
                     selectedCount++;
+                    selectedNames.push(cb.dataset.name);
                 }
             });
 
             // Apply multipliers
-            const carMultiplier = parseFloat(carSizeSelect.value) || 1;
-            const conditionValue = conditionSelect.value;
-            let conditionMultiplier = 1;
-            
-            if (conditionValue === 'dirty') conditionMultiplier = 1.1;
-            if (conditionValue === 'very_dirty') conditionMultiplier = 1.25;
+            const carMultiplier = selectedCar?.multiplier || 1;
+            const bodyConditionMultiplier = bodyConditionMultipliers[bodyConditionSelect?.value] ?? 1;
+            const interiorRequired = requiresInteriorDetails();
+            const interiorMaterialMultiplier = interiorRequired && interiorMaterialSelect?.value
+                ? interiorMaterialMultipliers[interiorMaterialSelect.value] ?? 1
+                : 1;
+            const interiorConditionMultiplier = interiorRequired && interiorConditionSelect?.value
+                ? interiorConditionMultipliers[interiorConditionSelect.value] ?? 1
+                : 1;
 
-            const total = basePrice * carMultiplier * conditionMultiplier;
+            const total = basePrice * carMultiplier * bodyConditionMultiplier * interiorMaterialMultiplier * interiorConditionMultiplier;
             totalPriceEl.textContent = '€' + total.toFixed(2);
+            if (totalField) {
+                totalField.value = total.toFixed(2);
+            }
 
-            // Update summary
-            summaryServicesEl.textContent = selectedCount + ' izvēlēti';
+            summaryServicesEl.textContent = selectedCount
+                ? selectedNames.join(', ')
+                : 'Nav izvēlēts';
         }
 
         function updateSummary() {
             // Car size
-            const carText = carSizeSelect.options[carSizeSelect.selectedIndex]?.text || 'Nav izvēlēts';
-            summaryCarEl.textContent = carText;
+            const carText = selectedCar?.label || (carDisplayInput.value?.trim() || '');
+            summaryCarEl.textContent = carText || 'Nav izvēlēts';
 
-            // Condition
-            const conditionText = conditionSelect.options[conditionSelect.selectedIndex]?.text || 'Nav izvēlēts';
-            summaryConditionEl.textContent = conditionText;
+            // Body condition
+            const bodyConditionText = bodyConditionSelect?.options[bodyConditionSelect.selectedIndex]?.text || 'Nav izvēlēts';
+            summaryBodyConditionEl.textContent = bodyConditionText;
+
+            // Interior material
+            const interiorMaterialText = interiorMaterialSelect?.options[interiorMaterialSelect.selectedIndex]?.text || 'Nav izvēlēts';
+            summaryInteriorMaterialEl.textContent = interiorMaterialText;
+
+            // Interior condition
+            const interiorConditionText = interiorConditionSelect?.options[interiorConditionSelect.selectedIndex]?.text || 'Nav izvēlēts';
+            summaryInteriorConditionEl.textContent = interiorConditionText;
 
             // Date
-            const dateValue = document.getElementById('date').value;
-            const timeValue = document.getElementById('time').value;
-            if (dateValue && timeValue) {
-                summaryDateEl.textContent = `${dateValue} ${timeValue}`;
-            } else if (dateValue) {
-                summaryDateEl.textContent = dateValue;
+            const dateValue = dateField ? dateField.value : '';
+            const timeValue = timeField ? timeField.value : '';
+            let dateLabel = '';
+
+            if (dateField) {
+                if (dateField.tagName === 'SELECT') {
+                    dateLabel = dateField.options[dateField.selectedIndex]?.text || '';
+                } else {
+                    dateLabel = formatDateForDisplay(dateField.value);
+                }
+            }
+
+            if (dateLabel && timeValue) {
+                summaryDateEl.textContent = `${dateLabel} ${timeValue}`;
+            } else if (dateLabel) {
+                summaryDateEl.textContent = dateLabel;
             } else {
                 summaryDateEl.textContent = 'Nav izvēlēts';
             }
@@ -765,39 +1096,270 @@
         }
 
         // Event listeners
-        carSizeSelect.addEventListener('change', updateSummary);
-        conditionSelect.addEventListener('change', updateSummary);
-        serviceCheckboxes.forEach(cb => cb.addEventListener('change', updateSummary));
-        document.getElementById('date').addEventListener('change', updateSummary);
-        document.getElementById('time').addEventListener('change', updateSummary);
+        function findCarMatch(value) {
+            const normalized = (value || '').toLowerCase().trim();
+            if (!normalized) {
+                return null;
+            }
 
-        // Form submission
-        document.getElementById('bookingForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate at least one service selected
-            const hasService = Array.from(serviceCheckboxes).some(cb => cb.checked);
-            if (!hasService) {
-                showMessage('Lūdzu izvēlies vismaz vienu pakalpojumu', 'error');
+            return carSuggestionData.find(option =>
+                option.labelLower === normalized || option.nameLower === normalized
+            ) || null;
+        }
+
+        function handleCarInput() {
+            const match = findCarMatch(carDisplayInput.value);
+
+            if (match) {
+                selectedCar = match;
+                carHiddenInput.value = match.name;
+            } else {
+                selectedCar = null;
+                carHiddenInput.value = '';
+            }
+
+            updateSummary();
+        }
+
+        function parseDate(value) {
+            return value ? new Date(`${value}T00:00:00`) : null;
+        }
+
+        function formatDateForDisplay(value) {
+            if (!value) return '';
+            const date = parseDate(value);
+            if (!date) return value;
+            return date.toLocaleDateString('lv-LV', {
+                weekday: 'long',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            });
+        }
+
+        function isWeekendDate(date) {
+            if (!date) return false;
+            const day = date.getDay();
+            return day === 0 || day === 6;
+        }
+
+        function ensureValidDate(showFeedback = true) {
+            if (!dateField || usesOfferSchedule) {
+                updateSummary();
                 return;
             }
 
-            // Get form data
-            const formData = new FormData(this);
-            formData.append('total', totalPriceEl.textContent.replace('€', ''));
-
-            // Show loading
-            document.body.classList.add('loading');
-
-            // Simulate submission (replace with actual endpoint)
-            setTimeout(() => {
-                document.body.classList.remove('loading');
-                showMessage('✅ Rezervācija veiksmīgi nosūtīta! Sazināsimies ar Tevi tuvākajā laikā.', 'success');
-                this.reset();
+            if (!dateField.value) {
                 updateSummary();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 1500);
+                updateGeneralTimeAvailability();
+                return;
+            }
+
+            const selectedDate = parseDate(dateField.value);
+            const minDate = minBookingDate ? parseDate(minBookingDate) : null;
+
+            if (minDate && selectedDate < minDate) {
+                if (showFeedback) {
+                    showMessage('Rezervācijas iespējamas sākot ar rītdienu.', 'error');
+                }
+                dateField.value = '';
+                updateSummary();
+                updateGeneralTimeAvailability();
+                return;
+            }
+
+            if (isWeekendDate(selectedDate)) {
+                if (showFeedback) {
+                    showMessage('Brīvdienās nestrādājam. Lūdzu izvēlies darba dienu.', 'error');
+                }
+                dateField.value = '';
+                updateSummary();
+                updateGeneralTimeAvailability();
+                return;
+            }
+
+            updateSummary();
+            updateGeneralTimeAvailability();
+        }
+
+        function updateInteriorConditionState() {
+            if (!interiorMaterialSelect || !interiorConditionSelect) {
+                return;
+            }
+
+            const hasMaterial = !!interiorMaterialSelect.value;
+            if (!hasMaterial) {
+                interiorConditionSelect.value = '';
+                interiorConditionSelect.disabled = true;
+            } else {
+                interiorConditionSelect.disabled = false;
+            }
+        }
+
+        function enforceServiceRules(triggerSummary = true) {
+            if (!serviceCheckboxes.length) {
+                if (triggerSummary) updateSummary();
+                return;
+            }
+
+            if (!hasBaseVehicleDetails()) {
+                serviceCheckboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.disabled = true;
+                });
+                if (triggerSummary) {
+                    updateSummary();
+                }
+                return;
+            }
+
+            serviceCheckboxes.forEach(cb => {
+                cb.disabled = false;
+            });
+
+            const selectedExclusive = [];
+            let hasStandard = false;
+
+            serviceCheckboxes.forEach(cb => {
+                const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                if (isExclusive && cb.checked) {
+                    selectedExclusive.push(cb);
+                }
+                if (!isExclusive && cb.checked) {
+                    hasStandard = true;
+                }
+            });
+
+            if (selectedExclusive.length > 0) {
+                const keep = selectedExclusive[0];
+                serviceCheckboxes.forEach(cb => {
+                    const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                    if (isExclusive) {
+                        cb.disabled = cb !== keep;
+                        if (cb !== keep && cb.checked) {
+                            cb.checked = false;
+                        }
+                    } else {
+                        if (cb.checked) {
+                            cb.checked = false;
+                        }
+                        cb.disabled = true;
+                    }
+                });
+            } else if (hasStandard) {
+                serviceCheckboxes.forEach(cb => {
+                    const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                    if (isExclusive) {
+                        if (cb.checked) {
+                            cb.checked = false;
+                        }
+                        cb.disabled = true;
+                    } else {
+                        cb.disabled = false;
+                    }
+                });
+            } else {
+                serviceCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+
+            updateInteriorRequirementState();
+
+            if (triggerSummary) {
+                updateSummary();
+            }
+        }
+
+        carDisplayInput.addEventListener('input', () => {
+            handleCarInput();
+            enforceServiceRules(false);
         });
+        carDisplayInput.addEventListener('change', () => {
+            handleCarInput();
+            enforceServiceRules(false);
+        });
+        if (bodyConditionSelect) {
+            bodyConditionSelect.addEventListener('change', () => {
+                updateSummary();
+                enforceServiceRules(false);
+            });
+        }
+        if (interiorMaterialSelect) {
+            interiorMaterialSelect.addEventListener('change', () => {
+                updateInteriorConditionState();
+                updateSummary();
+                enforceServiceRules(false);
+            });
+        }
+        if (interiorConditionSelect) {
+            interiorConditionSelect.addEventListener('change', () => {
+                updateSummary();
+                enforceServiceRules(false);
+            });
+        }
+        serviceCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+            enforceServiceRules(true);
+        }));
+        if (dateField) {
+            dateField.addEventListener('change', () => ensureValidDate(true));
+            dateField.addEventListener('input', () => ensureValidDate(false));
+        }
+        if (timeField) {
+            timeField.addEventListener('change', updateSummary);
+        }
+
+        // Form submission
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(e) {
+                let isValid = true;
+
+                const hasService = Array.from(serviceCheckboxes).some(cb => cb.checked);
+                if (!hasService) {
+                    showMessage('Lūdzu izvēlies vismaz vienu pakalpojumu', 'error');
+                    isValid = false;
+                }
+
+                if (isValid && !carHiddenInput.value) {
+                    showMessage('Lūdzu izvēlies auto modeli no saraksta', 'error');
+                    carDisplayInput.focus();
+                    isValid = false;
+                }
+
+                if (isValid && !usesOfferSchedule) {
+                    ensureValidDate(false);
+                    if (!dateField || !dateField.value) {
+                        showMessage('Lūdzu izvēlies pieejamo darba dienu no kalendāra', 'error');
+                        if (dateField) {
+                            dateField.focus();
+                        }
+                        isValid = false;
+                    }
+                }
+
+                if (isValid && (!timeField || !timeField.value)) {
+                    showMessage('Lūdzu izvēlies pieejamo laiku', 'error');
+                    if (timeField) {
+                        timeField.focus();
+                    }
+                    isValid = false;
+                }
+
+                if (isValid && !hasAllRequiredVehicleDetails()) {
+                    showMessage('Lūdzu aizpildi auto informāciju (un salona sadaļu, ja izvēlies atbilstošus pakalpojumus)', 'error');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    return;
+                }
+
+                if (totalField) {
+                    totalField.value = totalPriceEl.textContent.replace('€', '').trim();
+                }
+            });
+        }
 
         function showMessage(text, type) {
             const messagesDiv = document.getElementById('messages');
@@ -818,10 +1380,6 @@
             }
         }
 
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').setAttribute('min', today);
-
         // Check for offer in URL
         const offerId = urlParams.get('offer');
         if (offerId) {
@@ -830,7 +1388,14 @@
         }
 
         // Initialize summary totals on load
-        updateSummary();
+        handleCarInput();
+        if (usesOfferSchedule) {
+            updateSummary();
+        } else {
+            ensureValidDate(false);
+        }
+        updateInteriorConditionState();
+        enforceServiceRules(false);
     </script>
 </body>
 </html>

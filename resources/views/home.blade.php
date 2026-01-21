@@ -911,12 +911,139 @@
             border: none;
         }
 
+        .work-section {
+            max-width:1400px;
+            margin:0 auto 4rem;
+            padding:0 2rem;
+        }
+
+        .work-header {
+            text-align:center;
+            margin-bottom:2.5rem;
+        }
+
+        .work-pill {
+            display:inline-block;
+            padding:0.35rem 0.9rem;
+            border-radius:999px;
+            background:#fff1ec;
+            color:#d9461f;
+            font-weight:600;
+            text-transform:uppercase;
+            letter-spacing:0.1rem;
+            font-size:0.85rem;
+            margin-bottom:0.8rem;
+        }
+
+        .work-header h2 {
+            font-size:2.2rem;
+        }
+
+        .work-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:1.4rem;
+        }
+
+        .work-card {
+            background:white;
+            border-radius:20px;
+            border:1px solid #f0f0f0;
+            padding:1.4rem;
+            box-shadow:0 18px 35px rgba(0,0,0,0.06);
+            display:flex;
+            flex-direction:column;
+            gap:0.8rem;
+        }
+
+        .work-card .tag {
+            font-size:0.8rem;
+            text-transform:uppercase;
+            color:#ff814f;
+            letter-spacing:0.15rem;
+        }
+
+        .work-slider {
+            position:relative;
+            border-radius:16px;
+            overflow:hidden;
+            border:1px solid #ededed;
+            background:#f7f7f7;
+            height:200px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .work-slider img {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
+        }
+
+        .work-slider button {
+            position:absolute;
+            top:50%;
+            transform:translateY(-50%);
+            background:rgba(0,0,0,0.55);
+            color:white;
+            border:none;
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            cursor:pointer;
+        }
+
+        .work-slider button.prev { left:10px; }
+        .work-slider button.next { right:10px; }
+
         footer {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-            text-align: center;
-            color: #666;
+            background:white;
+            border-top:1px solid #e8e8e8;
+            margin-top:4rem;
+        }
+
+        .footer-wrapper {
+            max-width:1400px;
+            margin:0 auto;
+            padding:3rem 2rem;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:2rem;
+            color:#555;
+        }
+
+        .footer-column h4 {
+            font-size:1rem;
+            text-transform:uppercase;
+            letter-spacing:0.15rem;
+            color:var(--ink);
+            margin-bottom:1rem;
+        }
+
+        .footer-column ul {
+            list-style:none;
+            display:flex;
+            flex-direction:column;
+            gap:0.6rem;
+        }
+
+        .footer-column a {
+            text-decoration:none;
+            color:#666;
+        }
+
+        .footer-column a:hover {
+            color:var(--ink);
+        }
+
+        .footer-bottom {
+            text-align:center;
+            padding:1.5rem;
+            color:#777;
+            font-size:0.9rem;
+            border-top:1px solid #f0f0f0;
         }
 
         @media (max-width: 768px) {
@@ -962,7 +1089,7 @@
                 @auth
                     <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
                     <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="#">🛒 Grozs</a>
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
                         <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
                         <form method="POST" action="{{ route('logout') }}" class="logout-form">
                             @csrf
@@ -1126,7 +1253,7 @@
             <div class="calc-field">
                 <label for="car">Auto izmērs</label>
                 <select id="car">
-                    <option value="1">Izvēlies auto</option>
+                    <option value="">Izvēlies auto</option>
                     <option value="1">Mazs (Polo, Fiesta)</option>
                     <option value="1.2">Vidējs (A4, Octavia)</option>
                     <option value="1.5">SUV / Krosovers</option>
@@ -1251,8 +1378,75 @@
         <a href="/booking" class="btn-cta">Rezervēt vizīti →</a>
     </div>
 
+    @if($workItems->count())
+    <section class="work-section">
+        <div class="work-header">
+            <span class="work-pill">Mūsu darbi</span>
+            <h2>Pirms un pēc projekti</h2>
+            <p>Daži no jaunākajiem projektiem, kurus mūsu komanda paveica klientiem.</p>
+        </div>
+        <div class="work-grid">
+            @foreach($workItems as $index => $item)
+                <article class="work-card" data-slider-index="{{ $index }}">
+                    @if($item->tag)
+                        <span class="tag">{{ $item->tag }}</span>
+                    @endif
+                    <h3 class="card-title">{{ $item->title }}</h3>
+                    @if($item->description)
+                        <p>{{ $item->description }}</p>
+                    @endif
+                    <div class="work-slider"
+                         data-images='@json([
+                            $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
+                            $item->after_image ? asset("storage/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
+                         ])'>
+                        <img src="{{ $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
+                        <button class="prev" type="button" aria-label="Iepriekšējais">&lt;</button>
+                        <button class="next" type="button" aria-label="Nākamais">&gt;</button>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
     <footer>
-        <p>&copy; 2024 Auto Detailing Workshop. Visas tiesības aizsargātas.</p>
+        <div class="footer-wrapper">
+            <div class="footer-column">
+                <h4>Salons</h4>
+                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+            </div>
+            <div class="footer-column">
+                <h4>Kontakti</h4>
+                <ul>
+                    <li>📞 +371 2000 0000</li>
+                    <li>✉️ info@detailing.lv</li>
+                    <li>WhatsApp & Telegram</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Ātrās saites</h4>
+                <ul>
+                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Sekojiet mums</h4>
+                <ul>
+                    <li><a href="#" target="_blank">Instagram</a></li>
+                    <li><a href="#" target="_blank">Facebook</a></li>
+                    <li><a href="#" target="_blank">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+        </div>
     </footer>
 
     <script>
@@ -1262,6 +1456,11 @@
         const totalPriceDisplay = document.getElementById('totalPrice');
 
         function calculateTotal() {
+            if (!carSelect.value) {
+                totalPriceDisplay.textContent = 'Izvēlies auto';
+                return;
+            }
+
             let base = 0;
 
             serviceCheckboxes.forEach(cb => {
@@ -1294,6 +1493,26 @@
         });
 
         calculateTotal();
+
+        document.querySelectorAll('.work-slider').forEach(slider => {
+            const images = JSON.parse(slider.dataset.images);
+            let current = 0;
+            const img = slider.querySelector('img');
+
+            function render() {
+                img.src = images[current];
+            }
+
+            slider.querySelector('.prev').addEventListener('click', () => {
+                current = (current - 1 + images.length) % images.length;
+                render();
+            });
+
+            slider.querySelector('.next').addEventListener('click', () => {
+                current = (current + 1) % images.length;
+                render();
+            });
+        });
     </script>
 </body>
 </html>

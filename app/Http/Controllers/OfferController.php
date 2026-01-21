@@ -31,10 +31,11 @@ class OfferController extends Controller
             return back()->with('error', 'Šim piedāvājumam pieteikšanās notiek caur auto rezervāciju.');
         }
 
-        $data = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-        ]);
+        $user = auth()->user();
+
+        if (!$user->email) {
+            return back()->with('error', 'Lūdzu pievieno e-pasta adresi profila sadaļā, lai varētu pieteikties.');
+        }
 
         // Ja ir limits un jau pilns
         if ($offer->is_limited && $offer->registrations_count >= $offer->capacity) {
@@ -44,8 +45,8 @@ class OfferController extends Controller
         OfferRegistration::create([
             'offer_id' => $offer->id,
             'user_id'  => auth()->id(),
-            'name'     => $data['name'],
-            'email'    => $data['email'],
+            'name'     => $user->name ?? 'Dalībnieks',
+            'email'    => $user->email,
         ]);
 
         // Palielinām skaitītāju
