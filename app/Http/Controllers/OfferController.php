@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 
 class OfferController extends Controller
 {
-    // Piedāvājumu saraksts
+    /**
+     * Parāda aktīvo piedāvājumu sarakstu publiskajā lapā.
+     */
     public function index()
     {
+        // Ielādē tikai aktīvos piedāvājumus, jaunākos rādot vispirms.
         $offers = Offer::where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -18,30 +21,35 @@ class OfferController extends Controller
         return view('offers', compact('offers'));
     }
 
-    // Pieteikšanās tikai WEBINĀRIEM / pasākumiem bez auto
+    /**
+     * Reģistrē lietotāju vebināram/pasākumam (tikai "webinar" tipa piedāvājumiem).
+     */
     public function signup(Request $request, Offer $offer)
     {
-        // Tikai pieteikšanās no reģistrētiem lietotājiem un tikai vebināriem
+        // Pieteikšanās atļauta tikai autentificētiem lietotājiem.
         if (!auth()->check()) {
             return redirect()->route('login')
                 ->with('error', 'Lai pieteiktos vebināram, lūdzu pieslēdzies sistēmai.');
         }
 
+        // Aizsardzība: reģistrācija tikai "webinar" tipa piedāvājumiem.
         if ($offer->type !== 'webinar') {
             return back()->with('error', 'Šim piedāvājumam pieteikšanās notiek caur auto rezervāciju.');
         }
 
         $user = auth()->user();
 
+        // E-pasts ir obligāts, lai sazinātos par pasākumu.
         if (!$user->email) {
             return back()->with('error', 'Lūdzu pievieno e-pasta adresi profila sadaļā, lai varētu pieteikties.');
         }
 
-        // Ja ir limits un jau pilns
+        // Ja ir limits un jau pilns, jaunas reģistrācijas nepieņem.
         if ($offer->is_limited && $offer->registrations_count >= $offer->capacity) {
             return back()->with('error', 'Šis pasākums jau ir pilns.');
         }
 
+        // Izveido dalībnieka reģistrāciju piedāvājumam.
         OfferRegistration::create([
             'offer_id' => $offer->id,
             'user_id'  => auth()->id(),
@@ -49,7 +57,7 @@ class OfferController extends Controller
             'email'    => $user->email,
         ]);
 
-        // Palielinām skaitītāju
+        // Palielina reģistrāciju skaitītāju piedāvājumā.
         $offer->increment('registrations_count');
 
         return back()->with('success', 'Tu esi veiksmīgi pieteicies šim pasākumam!');

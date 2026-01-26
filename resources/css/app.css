@@ -1,3 +1,5 @@
+/* Noklusējuma Laravel + Tailwind CSS fails: definē Tailwind importu, */
+/* avotu ceļus klašu atklāšanai un tēmas fontu iestatījumus. */
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

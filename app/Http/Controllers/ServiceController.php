@@ -7,8 +7,12 @@ use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
+    /**
+     * Parāda pakalpojumu sarakstu ar papildus meta datiem (ikona, ilgums, iezīmes).
+     */
     public function index()
     {
+        // Lokāls meta apraksts pakalpojumiem, kas nav glabāts datubāzē.
         $meta = [
             'areja-mazgasana' => [
                 'icon' => '🚿',
@@ -66,6 +70,7 @@ class ServiceController extends Controller
             ],
         ];
 
+        // Ielādē pakalpojumus un pievieno tiem meta datus skatam.
         $services = Service::orderBy('base_price')->get()->map(function ($service) use ($meta) {
             $slug = $service->slug;
             $service->icon = $meta[$slug]['icon'] ?? '✨';

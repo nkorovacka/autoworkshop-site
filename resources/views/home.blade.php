@@ -4,13 +4,340 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auto Detailing Workshop - Premium Auto Kopšana</title>
-    <style>
+    
+</head>
+<body>
+    <!-- Galvenā navigācija ar logo, saišu izvēlni un lietotāja stāvokli -->
+    <header>
+        <nav>
+            <div class="logo">Auto Detailing</div>
+            <ul class="nav-links">
+                <li><a href="{{ route('home') }}" class="active">Galvenā</a></li>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                <li><a href="{{ route('our-work') }}">Darbi</a></li>
+            </ul>
+            <div class="nav-right">
+                @auth
+                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
+                    <div class="auth-buttons signed-in">
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
+                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
+                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                            @csrf
+                            <button type="submit" class="btn-logout">Iziet</button>
+                        </form>
+                    </div>
+                @else
+                    <button class="icon-button" title="Profils">👤</button>
+                    <div class="auth-buttons">
+                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
+                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
+                    </div>
+                @endauth
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero sadaļa ar galveno vēstījumu un CTA pogām -->
+    <div class="hero-section">
+        <div class="hero-layout">
+            <div class="hero-content">
+                <div class="hero-pill">Signature Detailing Line</div>
+                <h1>Atdzīvini sava auto izskatu ar profesionālu kopšanu</h1>
+                <p>Mēs piedāvājam pilnu auto detaļu kopšanas spektru — no rūpīgas mazgāšanas līdz keramiskajai aizsardzībai. Viss, lai Tavs auto izskatītos un justos nevainojami katru dienu.</p>
+                <div class="hero-buttons">
+                    <a href="/booking" class="btn-primary">Rezervēt vizīti</a>
+                    <a href="/services" class="btn-secondary">Apskatīt pakalpojumus</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-value">1 200+</span>
+                        <span class="stat-label">Apkalpoti auto</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">4.9/5</span>
+                        <span class="stat-label">Klientu vērtējums</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">10+</span>
+                        <span class="stat-label">Gadu pieredze</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <span class="accent-label">Chromatic finish</span>
+            </div>
+        </div>
+    </div>
+    <!-- Zīmola "signature" sadaļa ar materiālu un ieguvumu uzskaitījumu -->
+    <div class="signature-section">
+        <div class="signature-grid">
+            <div class="signature-copy">
+                <div class="signature-label">Signature gradient</div>
+                <h2>Mūsu raksturīgā vara-oranžā palete</h2>
+                <p>Auto kopšanas procesā apvienojam kontrastus: dziļu melnu spīdumu, drosmīgas vara otrās kārtas akcentus un krēmīgu pārklājumu, kas saudzē krāsu.</p>
+                <div class="signature-benefits">
+                    <div class="signature-benefit">
+                        <span class="benefit-dot"></span>
+                        <div>3 posmu keramiskais pārklājums</div>
+                    </div>
+                    <div class="signature-benefit">
+                        <span class="benefit-dot"></span>
+                        <div>Tonēta slāņa pašdziedēšanās</div>
+                    </div>
+                    <div class="signature-benefit">
+                        <span class="benefit-dot"></span>
+                        <div>Roku darbs ar personalizētu finish</div>
+                    </div>
+                </div>
+            </div>
+            <div class="signature-panel">
+                <h3>Color Lab</h3>
+                <p>Katrai vizītei izveidojam unikālu akcentu komplektu, kas pieskaņots virsbūves tonim un klienta vēlmēm.</p>
+                <div class="palette">
+                    <span class="tone-dark"></span>
+                    <span class="tone-accent"></span>
+                    <span class="tone-soft"></span>
+                </div>
+                <div class="signature-stats">
+                    <div class="sig-stat">
+                        <div class="sig-value">92%</div>
+                        <div class="sig-label">Hidrofobija</div>
+                    </div>
+                    <div class="sig-stat">
+                        <div class="sig-value">+30%</div>
+                        <div class="sig-label">Spīduma dziļums</div>
+                    </div>
+                    <div class="sig-stat">
+                        <div class="sig-value">24m</div>
+                        <div class="sig-label">Aizsardzība</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Galveno priekšrocību izcēluma bloks -->
+    <div class="highlight-section">
+        <h2 class="section-title">Kāpēc izvēlēties mūs</h2>
+        <p class="section-subtitle">Modernas tehnoloģijas, premium produkti un meistari ar pieredzi</p>
+        <div class="highlight-grid">
+            <div class="highlight-card">
+                <div class="highlight-icon">🧼</div>
+                <h3>Premium produkti</h3>
+                <p>Strādājam ar Gtechniq, Koch Chemie un citiem vadošajiem zīmoliem, lai garantētu izcilu rezultātu.</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">🛡️</div>
+                <h3>Garantēta kvalitāte</h3>
+                <p>Katram pakalpojumam nodrošinām kvalitātes kontroli un 100% apmierinātības garantiju.</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">⚡</div>
+                <h3>Ātrs serviss</h3>
+                <p>Piesakies online un saņem apstiprinājumu dažu minūšu laikā. Elastīgi grafiki darba dienās un brīvdienās.</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">📍</div>
+                <h3>Ērta atrašanās vieta</h3>
+                <p>Serviss Rīgas centrā ar bezmaksas stāvvietu un gaidīšanas zonu ar WiFi un kafiju.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Populārāko pakalpojumu priekšskatījums -->
+    <div class="services-preview">
+        <h2 class="section-title">Populārākie pakalpojumi</h2>
+        <p class="section-subtitle">Izvēlies sev piemērotāko pakalpojumu komplektu</p>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🚿</div>
+                <h3>Ārējā mazgāšana</h3>
+                <p class="service-description">Divpakāpju mazgāšanas process, kas saudzīgi attīra virsbūvi, diskus un detaļas.</p>
+                <a class="service-link" href="/services">Skatīt detaļas →</a>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🪑</div>
+                <h3>Salona dziļā tīrīšana</h3>
+                <p class="service-description">Ķīmiskā tīrīšana, sēdekļu kopšana un antibakteriāla apstrāde svaigam salonam.</p>
+                <a class="service-link" href="/services">Skatīt detaļas →</a>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💎</div>
+                <h3>Keramiskā aizsardzība</h3>
+                <p class="service-description">Ilgstošs pārklājums ar hidrofobo efektu un aizsardzību pret UV un ķīmiju.</p>
+                <a class="service-link" href="/services">Skatīt detaļas →</a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Aktuālo piedāvājumu sadaļa -->
+    <div class="offers-section">
+        <h2 class="section-title">Aktuālie piedāvājumi</h2>
+        <p class="section-subtitle">Izmanto sezonālās akcijas un komplektu cenas</p>
+        <div class="offers-grid">
+            <div class="offer-card">
+                <span class="offer-tag">-20% / pavasaris</span>
+                <h3>Pilns detailing komplekts</h3>
+                <p>Piesakies pilnajam pakalpojumu komplektam un saņem 20% atlaidi darba laikam.</p>
+                <a class="offer-button" href="/offers">Uzzināt vairāk</a>
+            </div>
+            <div class="offer-card">
+                <span class="offer-tag">Brīvdienu bonuss</span>
+                <h3>Bezmaksas salona aromāts</h3>
+                <p>Vizītēm sestdienās un svētdienās pievienojam premium aromātu komplektu bez maksas.</p>
+                <a class="offer-button" href="/offers">Apskatīt akcijas</a>
+            </div>
+            <div class="offer-card">
+                <span class="offer-tag">Jauns klientiem</span>
+                <h3>50% atlaide pulēšanai</h3>
+                <p>Pirmreizējiem klientiem piedāvājam pusi cenas virsbūves pulēšanas pakalpojumiem.</p>
+                <a class="offer-button" href="/booking">Pieteikties</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processa skaidrojums soli pa solim -->
+    <div class="process-section">
+        <h2 class="section-title">Kā viss notiek</h2>
+        <p class="section-subtitle">Vienkāršs process ērtai pieredzei</p>
+        <div class="process-grid">
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <h4>Izvēlies pakalpojumu</h4>
+                <p>Izpēti pakalpojumus un rezervē sev ērtāko komplektu.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <h4>Piesakies tiešsaistē</h4>
+                <p>Aizpildi pieteikumu, izvēlies laiku un saņem apstiprinājumu e-pastā.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <h4>Atved auto</h4>
+                <p>Atved auto izvēlētajā laikā vai izmanto mūsu izbraukuma pakalpojumu.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">4</div>
+                <h4>Saņem rezultātu</h4>
+                <p>Mēs informēsim, kad darbs pabeigts. Pārbaudi auto un izbaudi jauno izskatu.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Noslēdzošais aicinājums rezervēt vizīti -->
+    <div class="cta-section">
+        <h2>Vai Tavs auto gatavs atjaunot izskatu?</h2>
+        <p>Rezervē vizīti tiešsaistē un saņem personalizētu piedāvājumu ar precīzu cenu.</p>
+        <a href="/booking" class="btn-cta">Rezervēt vizīti →</a>
+    </div>
+
+    <!-- Darbu galerija, ja ir pieejami darbi -->
+    @if($workItems->count())
+    <section class="work-section">
+        <div class="work-header">
+            <span class="work-pill">Mūsu darbi</span>
+            <h2>Pirms un pēc projekti</h2>
+            <p>Daži no jaunākajiem projektiem, kurus mūsu komanda paveica klientiem.</p>
+        </div>
+        <div class="work-grid">
+            @foreach($workItems as $index => $item)
+                <article class="work-card" data-slider-index="{{ $index }}">
+                    @if($item->tag)
+                        <span class="tag">{{ $item->tag }}</span>
+                    @endif
+                    <h3 class="card-title">{{ $item->title }}</h3>
+                    @if($item->description)
+                        <p>{{ $item->description }}</p>
+                    @endif
+                    <div class="work-slider"
+                         data-images='@json([
+                            $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
+                            $item->after_image ? asset("storage/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
+                         ])'>
+                        <img src="{{ $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
+                        <button class="prev" type="button" aria-label="Iepriekšējais">&lt;</button>
+                        <button class="next" type="button" aria-label="Nākamais">&gt;</button>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    <!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
+    <footer>
+        <div class="footer-wrapper">
+            <div class="footer-column">
+                <h4>Salons</h4>
+                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+            </div>
+            <div class="footer-column">
+                <h4>Kontakti</h4>
+                <ul>
+                    <li>📞 +371 2000 0000</li>
+                    <li>✉️ info@detailing.lv</li>
+                    <li>WhatsApp & Telegram</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Ātrās saites</h4>
+                <ul>
+                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Sekojiet mums</h4>
+                <ul>
+                    <li><a href="#" target="_blank">Instagram</a></li>
+                    <li><a href="#" target="_blank">Facebook</a></li>
+                    <li><a href="#" target="_blank">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.work-slider').forEach(slider => {
+            const images = JSON.parse(slider.dataset.images);
+            let current = 0;
+            const img = slider.querySelector('img');
+
+            function render() {
+                img.src = images[current];
+            }
+
+            slider.querySelector('.prev').addEventListener('click', () => {
+                current = (current - 1 + images.length) % images.length;
+                render();
+            });
+
+            slider.querySelector('.next').addEventListener('click', () => {
+                current = (current + 1) % images.length;
+                render();
+            });
+        });
+    </script>
+<style>
+        /* Globālā nullēšana un kastes modelis vienmērīgai izkārtošanai */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* Krāsu mainīgie un toņu palete visai lapai */
         :root {
             --accent: #ff5c35;
             --accent-dark: #d9461f;
@@ -18,6 +345,7 @@
             --ink: #1a1a1a;
         }
 
+        /* Pamatteksts, fons un kopējā tipogrāfija */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
@@ -25,7 +353,7 @@
             background: #fafafa;
         }
 
-        /* Header */
+        /* Galvenes fiksācija un navigācijas izkārtojums */
         header {
             background: white;
             border-bottom: 1px solid #e8e8e8;
@@ -201,7 +529,7 @@
             background: #dfdfdf;
         }
 
-        /* Hero */
+        /* Hero sadaļas izkārtojums un galvenie CTA stili */
         .hero-section {
             max-width: 1400px;
             margin: 0 auto;
@@ -428,7 +756,7 @@
             background: linear-gradient(90deg, #ffd4c4, #fff5ef);
         }
 
-        /* Signature color story */
+        /* "Signature" sadaļas vizuālie akcenti un palete */
         .signature-section {
             max-width: 1400px;
             margin: 0 auto;
@@ -574,7 +902,7 @@
             background: var(--accent-light);
         }
 
-        /* Highlights */
+        /* Priekšrocību kartīšu izkārtojums un krāsu kontrasti */
         .highlight-section {
             max-width: 1400px;
             margin: 0 auto;
@@ -630,7 +958,7 @@
             color: #666;
         }
 
-        /* Services preview */
+        /* Populārāko pakalpojumu priekšskatījuma režģis */
         .services-preview {
             max-width: 1400px;
             margin: 0 auto;
@@ -688,107 +1016,8 @@
             color: var(--accent-dark);
         }
 
-        /* Calculator */
-        .calculator-section {
-            max-width: 1400px;
-            margin: 0 auto 4rem;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 24px;
-            border: 1px solid #e8e8e8;
-        }
 
-        .calculator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .calc-field label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .calc-field select {
-            width: 100%;
-            padding: 0.9rem;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-
-        .service-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .service-option {
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            padding: 1.2rem;
-            background: #fafafa;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .service-option:hover {
-            border-color: var(--accent);
-            background: white;
-        }
-
-        .service-option input {
-            display: none;
-        }
-
-        .service-option label {
-            display: flex;
-            gap: 1rem;
-            cursor: pointer;
-        }
-
-        .service-option span {
-            font-size: 1.6rem;
-        }
-
-        .service-option strong {
-            display: block;
-            font-size: 1.05rem;
-        }
-
-        .service-option input:checked + label strong {
-            color: var(--accent);
-        }
-
-        .price-display {
-            background: var(--ink);
-            color: white;
-            padding: 2rem;
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .price-display h3 {
-            font-weight: 500;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-        }
-
-        .price-display .price {
-            font-size: 3rem;
-            font-weight: 700;
-        }
-
-        .calculator-note {
-            text-align: center;
-            color: #666;
-            margin-top: 1rem;
-        }
-
-        /* Offers */
+        /* Piedāvājumu kartītes un to tipogrāfija */
         .offers-section {
             max-width: 1400px;
             margin: 0 auto 4rem;
@@ -845,7 +1074,7 @@
             color: white;
         }
 
-        /* Process/CTA */
+        /* Procesa un CTA sadaļu izkārtojums */
         .process-section {
             max-width: 1400px;
             margin: 0 auto;
@@ -911,6 +1140,7 @@
             border: none;
         }
 
+        /* Mūsu darbu galerijas izkārtojums */
         .work-section {
             max-width:1400px;
             margin:0 auto 4rem;
@@ -998,6 +1228,7 @@
         .work-slider button.prev { left:10px; }
         .work-slider button.next { right:10px; }
 
+        /* Kājenes struktūra ar kolonnām un apakšējo joslu */
         footer {
             background:white;
             border-top:1px solid #e8e8e8;
@@ -1046,6 +1277,7 @@
             border-top:1px solid #f0f0f0;
         }
 
+        /* Mobilā adaptācija mazākiem ekrāniem */
         @media (max-width: 768px) {
             .hero-section h1 {
                 font-size: 2.5rem;
@@ -1073,446 +1305,5 @@
             }
         }
     </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">Auto Detailing</div>
-            <ul class="nav-links">
-                <li><a href="{{ route('home') }}" class="active">Galvenā</a></li>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('our-work') }}">Darbi</a></li>
-            </ul>
-            <div class="nav-right">
-                @auth
-                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                    <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                            @csrf
-                            <button type="submit" class="btn-logout">Iziet</button>
-                        </form>
-                    </div>
-                @else
-                    <button class="icon-button" title="Profils">👤</button>
-                    <div class="auth-buttons">
-                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
-    </header>
-
-    <div class="hero-section">
-        <div class="hero-layout">
-            <div class="hero-content">
-                <div class="hero-pill">Signature Detailing Line</div>
-                <h1>Atdzīvini sava auto izskatu ar profesionālu kopšanu</h1>
-                <p>Mēs piedāvājam pilnu auto detaļu kopšanas spektru — no rūpīgas mazgāšanas līdz keramiskajai aizsardzībai. Viss, lai Tavs auto izskatītos un justos nevainojami katru dienu.</p>
-                <div class="hero-buttons">
-                    <a href="/booking" class="btn-primary">Rezervēt vizīti</a>
-                    <a href="/services" class="btn-secondary">Apskatīt pakalpojumus</a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <span class="stat-value">1 200+</span>
-                        <span class="stat-label">Apkalpoti auto</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value">4.9/5</span>
-                        <span class="stat-label">Klientu vērtējums</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value">10+</span>
-                        <span class="stat-label">Gadu pieredze</span>
-                    </div>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <span class="accent-label">Chromatic finish</span>
-                <h3 class="accent-title">Neon Copper Edition</h3>
-                <p>Ekskluzīvs pārklājums, kas piešķir virsbūvei siltu mirdzumu un ilgstošu aizsardzību.</p>
-                <div class="accent-meter">
-                    <div class="accent-meter-fill"></div>
-                </div>
-                <div class="color-stripes">
-                    <span class="color-stripe stripe-one"></span>
-                    <span class="color-stripe stripe-two"></span>
-                    <span class="color-stripe stripe-three"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="signature-section">
-        <div class="signature-grid">
-            <div class="signature-copy">
-                <div class="signature-label">Signature gradient</div>
-                <h2>Mūsu raksturīgā vara-oranžā palete</h2>
-                <p>Auto kopšanas procesā apvienojam kontrastus: dziļu melnu spīdumu, drosmīgas vara otrās kārtas akcentus un krēmīgu pārklājumu, kas saudzē krāsu.</p>
-                <div class="signature-benefits">
-                    <div class="signature-benefit">
-                        <span class="benefit-dot"></span>
-                        <div>3 posmu keramiskais pārklājums</div>
-                    </div>
-                    <div class="signature-benefit">
-                        <span class="benefit-dot"></span>
-                        <div>Tonēta slāņa pašdziedēšanās</div>
-                    </div>
-                    <div class="signature-benefit">
-                        <span class="benefit-dot"></span>
-                        <div>Roku darbs ar personalizētu finish</div>
-                    </div>
-                </div>
-            </div>
-            <div class="signature-panel">
-                <h3>Color Lab</h3>
-                <p>Katrai vizītei izveidojam unikālu akcentu komplektu, kas pieskaņots virsbūves tonim un klienta vēlmēm.</p>
-                <div class="palette">
-                    <span class="tone-dark"></span>
-                    <span class="tone-accent"></span>
-                    <span class="tone-soft"></span>
-                </div>
-                <div class="signature-stats">
-                    <div class="sig-stat">
-                        <div class="sig-value">92%</div>
-                        <div class="sig-label">Hidrofobija</div>
-                    </div>
-                    <div class="sig-stat">
-                        <div class="sig-value">+30%</div>
-                        <div class="sig-label">Spīduma dziļums</div>
-                    </div>
-                    <div class="sig-stat">
-                        <div class="sig-value">24m</div>
-                        <div class="sig-label">Aizsardzība</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="highlight-section">
-        <h2 class="section-title">Kāpēc izvēlēties mūs</h2>
-        <p class="section-subtitle">Modernas tehnoloģijas, premium produkti un meistari ar pieredzi</p>
-        <div class="highlight-grid">
-            <div class="highlight-card">
-                <div class="highlight-icon">🧼</div>
-                <h3>Premium produkti</h3>
-                <p>Strādājam ar Gtechniq, Koch Chemie un citiem vadošajiem zīmoliem, lai garantētu izcilu rezultātu.</p>
-            </div>
-            <div class="highlight-card">
-                <div class="highlight-icon">🛡️</div>
-                <h3>Garantēta kvalitāte</h3>
-                <p>Katram pakalpojumam nodrošinām kvalitātes kontroli un 100% apmierinātības garantiju.</p>
-            </div>
-            <div class="highlight-card">
-                <div class="highlight-icon">⚡</div>
-                <h3>Ātrs serviss</h3>
-                <p>Piesakies online un saņem apstiprinājumu dažu minūšu laikā. Elastīgi grafiki darba dienās un brīvdienās.</p>
-            </div>
-            <div class="highlight-card">
-                <div class="highlight-icon">📍</div>
-                <h3>Ērta atrašanās vieta</h3>
-                <p>Serviss Rīgas centrā ar bezmaksas stāvvietu un gaidīšanas zonu ar WiFi un kafiju.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="services-preview">
-        <h2 class="section-title">Populārākie pakalpojumi</h2>
-        <p class="section-subtitle">Izvēlies vajadzīgo un saņem personalizētu aprēķinu</p>
-        <div class="services-grid">
-            <div class="service-card">
-                <div class="service-icon">🚿</div>
-                <h3>Ārējā mazgāšana</h3>
-                <p class="service-description">Divpakāpju mazgāšanas process, kas saudzīgi attīra virsbūvi, diskus un detaļas.</p>
-                <a class="service-link" href="/services">Skatīt detaļas →</a>
-            </div>
-            <div class="service-card">
-                <div class="service-icon">🪑</div>
-                <h3>Salona dziļā tīrīšana</h3>
-                <p class="service-description">Ķīmiskā tīrīšana, sēdekļu kopšana un antibakteriāla apstrāde svaigam salonam.</p>
-                <a class="service-link" href="/services">Skatīt detaļas →</a>
-            </div>
-            <div class="service-card">
-                <div class="service-icon">💎</div>
-                <h3>Keramiskā aizsardzība</h3>
-                <p class="service-description">Ilgstošs pārklājums ar hidrofobo efektu un aizsardzību pret UV un ķīmiju.</p>
-                <a class="service-link" href="/services">Skatīt detaļas →</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="calculator-section" id="calculator">
-        <h2 class="section-title">Aprēķini cenu pirms vizītes</h2>
-        <p class="section-subtitle">Izvēlies auto izmēru, stāvokli un vajadzīgos pakalpojumus</p>
-        <div class="calculator-grid">
-            <div class="calc-field">
-                <label for="car">Auto izmērs</label>
-                <select id="car">
-                    <option value="">Izvēlies auto</option>
-                    <option value="1">Mazs (Polo, Fiesta)</option>
-                    <option value="1.2">Vidējs (A4, Octavia)</option>
-                    <option value="1.5">SUV / Krosovers</option>
-                    <option value="2">Busiņš</option>
-                </select>
-            </div>
-            <div class="calc-field">
-                <label for="condition">Auto stāvoklis</label>
-                <select id="condition">
-                    <option value="1">Normāls</option>
-                    <option value="1.1">Netīrs (+10%)</option>
-                    <option value="1.25">Ļoti netīrs (+25%)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="service-options">
-            <div class="service-option">
-                <input type="checkbox" id="service-exterior" value="30" class="service">
-                <label for="service-exterior">
-                    <span>🧽</span>
-                    <div>
-                        <strong>Ārējā mazgāšana</strong>
-                        <small>No €30</small>
-                    </div>
-                </label>
-            </div>
-            <div class="service-option">
-                <input type="checkbox" id="service-interior" value="45" class="service">
-                <label for="service-interior">
-                    <span>🪑</span>
-                    <div>
-                        <strong>Salona tīrīšana</strong>
-                        <small>No €45</small>
-                    </div>
-                </label>
-            </div>
-            <div class="service-option">
-                <input type="checkbox" id="service-polish" value="80" class="service">
-                <label for="service-polish">
-                    <span>✨</span>
-                    <div>
-                        <strong>Virsbūves pulēšana</strong>
-                        <small>No €80</small>
-                    </div>
-                </label>
-            </div>
-            <div class="service-option">
-                <input type="checkbox" id="service-ceramic" value="150" class="service">
-                <label for="service-ceramic">
-                    <span>🛡️</span>
-                    <div>
-                        <strong>Keramiskā aizsardzība</strong>
-                        <small>No €150</small>
-                    </div>
-                </label>
-            </div>
-        </div>
-
-        <div class="price-display">
-            <h3>Aptuvenā investīcija</h3>
-            <div class="price" id="totalPrice">€0.00</div>
-        </div>
-        <p class="calculator-note">Precīzu piedāvājumu saņemsi pēc auto apskates uz vietas.</p>
-    </div>
-
-    <div class="offers-section">
-        <h2 class="section-title">Aktuālie piedāvājumi</h2>
-        <p class="section-subtitle">Izmanto sezonālās akcijas un komplektu cenas</p>
-        <div class="offers-grid">
-            <div class="offer-card">
-                <span class="offer-tag">-20% / pavasaris</span>
-                <h3>Pilns detailing komplekts</h3>
-                <p>Piesakies pilnajam pakalpojumu komplektam un saņem 20% atlaidi darba laikam.</p>
-                <a class="offer-button" href="/offers">Uzzināt vairāk</a>
-            </div>
-            <div class="offer-card">
-                <span class="offer-tag">Brīvdienu bonuss</span>
-                <h3>Bezmaksas salona aromāts</h3>
-                <p>Vizītēm sestdienās un svētdienās pievienojam premium aromātu komplektu bez maksas.</p>
-                <a class="offer-button" href="/offers">Apskatīt akcijas</a>
-            </div>
-            <div class="offer-card">
-                <span class="offer-tag">Jauns klientiem</span>
-                <h3>50% atlaide pulēšanai</h3>
-                <p>Pirmreizējiem klientiem piedāvājam pusi cenas virsbūves pulēšanas pakalpojumiem.</p>
-                <a class="offer-button" href="/booking">Pieteikties</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="process-section">
-        <h2 class="section-title">Kā viss notiek</h2>
-        <p class="section-subtitle">Vienkāršs process ērtai pieredzei</p>
-        <div class="process-grid">
-            <div class="process-step">
-                <div class="step-number">1</div>
-                <h4>Izvēlies pakalpojumu</h4>
-                <p>Izpēti pakalpojumus, izmanto kalkulatoru un rezervē sev ērtāko komplektu.</p>
-            </div>
-            <div class="process-step">
-                <div class="step-number">2</div>
-                <h4>Piesakies tiešsaistē</h4>
-                <p>Aizpildi pieteikumu, izvēlies laiku un saņem apstiprinājumu e-pastā.</p>
-            </div>
-            <div class="process-step">
-                <div class="step-number">3</div>
-                <h4>Atved auto</h4>
-                <p>Atved auto izvēlētajā laikā vai izmanto mūsu izbraukuma pakalpojumu.</p>
-            </div>
-            <div class="process-step">
-                <div class="step-number">4</div>
-                <h4>Saņem rezultātu</h4>
-                <p>Mēs informēsim, kad darbs pabeigts. Pārbaudi auto un izbaudi jauno izskatu.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="cta-section">
-        <h2>Vai Tavs auto gatavs atjaunot izskatu?</h2>
-        <p>Rezervē vizīti tiešsaistē un saņem personalizētu piedāvājumu ar precīzu cenu.</p>
-        <a href="/booking" class="btn-cta">Rezervēt vizīti →</a>
-    </div>
-
-    @if($workItems->count())
-    <section class="work-section">
-        <div class="work-header">
-            <span class="work-pill">Mūsu darbi</span>
-            <h2>Pirms un pēc projekti</h2>
-            <p>Daži no jaunākajiem projektiem, kurus mūsu komanda paveica klientiem.</p>
-        </div>
-        <div class="work-grid">
-            @foreach($workItems as $index => $item)
-                <article class="work-card" data-slider-index="{{ $index }}">
-                    @if($item->tag)
-                        <span class="tag">{{ $item->tag }}</span>
-                    @endif
-                    <h3 class="card-title">{{ $item->title }}</h3>
-                    @if($item->description)
-                        <p>{{ $item->description }}</p>
-                    @endif
-                    <div class="work-slider"
-                         data-images='@json([
-                            $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
-                            $item->after_image ? asset("storage/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
-                         ])'>
-                        <img src="{{ $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
-                        <button class="prev" type="button" aria-label="Iepriekšējais">&lt;</button>
-                        <button class="next" type="button" aria-label="Nākamais">&gt;</button>
-                    </div>
-                </article>
-            @endforeach
-        </div>
-    </section>
-    @endif
-
-    <footer>
-        <div class="footer-wrapper">
-            <div class="footer-column">
-                <h4>Salons</h4>
-                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-            </div>
-            <div class="footer-column">
-                <h4>Kontakti</h4>
-                <ul>
-                    <li>📞 +371 2000 0000</li>
-                    <li>✉️ info@detailing.lv</li>
-                    <li>WhatsApp & Telegram</li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Ātrās saites</h4>
-                <ul>
-                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Sekojiet mums</h4>
-                <ul>
-                    <li><a href="#" target="_blank">Instagram</a></li>
-                    <li><a href="#" target="_blank">Facebook</a></li>
-                    <li><a href="#" target="_blank">YouTube</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-        </div>
-    </footer>
-
-    <script>
-        const carSelect = document.getElementById('car');
-        const conditionSelect = document.getElementById('condition');
-        const serviceCheckboxes = document.querySelectorAll('.service');
-        const totalPriceDisplay = document.getElementById('totalPrice');
-
-        function calculateTotal() {
-            if (!carSelect.value) {
-                totalPriceDisplay.textContent = 'Izvēlies auto';
-                return;
-            }
-
-            let base = 0;
-
-            serviceCheckboxes.forEach(cb => {
-                if (cb.checked) {
-                    base += parseFloat(cb.value);
-                }
-            });
-
-            const carMultiplier = parseFloat(carSelect.value) || 1;
-            const conditionMultiplier = parseFloat(conditionSelect.value) || 1;
-            const total = base * carMultiplier * conditionMultiplier;
-            totalPriceDisplay.textContent = '€' + total.toFixed(2);
-        }
-
-        carSelect.addEventListener('change', calculateTotal);
-        conditionSelect.addEventListener('change', calculateTotal);
-        serviceCheckboxes.forEach(cb => cb.addEventListener('change', calculateTotal));
-
-        document.querySelectorAll('.service-option').forEach(option => {
-            option.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'INPUT') {
-                    e.preventDefault();
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    if (checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        checkbox.dispatchEvent(new Event('change'));
-                    }
-                }
-            });
-        });
-
-        calculateTotal();
-
-        document.querySelectorAll('.work-slider').forEach(slider => {
-            const images = JSON.parse(slider.dataset.images);
-            let current = 0;
-            const img = slider.querySelector('img');
-
-            function render() {
-                img.src = images[current];
-            }
-
-            slider.querySelector('.prev').addEventListener('click', () => {
-                current = (current - 1 + images.length) % images.length;
-                render();
-            });
-
-            slider.querySelector('.next').addEventListener('click', () => {
-                current = (current + 1) % images.length;
-                render();
-            });
-        });
-    </script>
 </body>
 </html>

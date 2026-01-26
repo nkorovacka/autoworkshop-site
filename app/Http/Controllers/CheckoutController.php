@@ -12,17 +12,23 @@ use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Parāda apmaksas/checkout lapu ar groza saturu.
+     */
     public function index()
     {
+        // Ielādē groza vienumus ar produktiem konkrētajam lietotājam.
         $items = CartItem::with('product')
             ->where('user_id', auth()->id())
             ->get();
 
+        // Ja grozs ir tukšs, novirza atpakaļ uz grozu ar kļūdas paziņojumu.
         if ($items->isEmpty()) {
             return redirect()->route('cart.index')
                 ->withErrors(['cart' => 'Grozā nav produktu.']);
         }
 
+        // Aprēķina starpsummu.
         $subtotal = $items->sum(fn ($item) => (float) $item->unit_price * $item->quantity);
 
         return view('checkout', [
@@ -31,17 +37,23 @@ class CheckoutController extends Controller
         ]);
     }
 
+    /**
+     * Apstrādā pasūtījuma noformēšanu, validē datus un saglabā pasūtījumu.
+     */
     public function store(Request $request)
     {
+        // Ielādē groza vienumus ar produktiem konkrētajam lietotājam.
         $items = CartItem::with('product')
             ->where('user_id', auth()->id())
             ->get();
 
+        // Ja grozs ir tukšs, izvada uz grozu ar kļūdas paziņojumu.
         if ($items->isEmpty()) {
             return redirect()->route('cart.index')
                 ->withErrors(['cart' => 'Grozā nav produktu.']);
         }
 
+        // Validē pasūtījuma datus, ieskaitot kartes laukus un piegādes metodi.
         $data = $request->validate([
             'customer_name' => 'nullable|string|max:255',
             'customer_phone' => 'nullable|string|max:50',
@@ -54,6 +66,7 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
+        // Pārbauda, vai kartes derīgums ir vismaz nākamajā mēnesī.
         [$expMonth, $expYear] = explode('/', $data['card_expiry']);
         $expYearFull = 2000 + (int) $expYear;
         $expiryDate = Carbon::createFromDate($expYearFull, (int) $expMonth, 1)->endOfMonth();
@@ -64,10 +77,12 @@ class CheckoutController extends Controller
                 ->withErrors(['card_expiry' => 'Kartes derīguma termiņam jābūt vismaz vienu mēnesi pēc šodienas.']);
         }
 
+        // Piegādei obligāti nepieciešama adrese.
         if ($data['shipping_method'] === 'delivery' && empty($data['shipping_address'])) {
             return back()->withInput()->withErrors(['shipping_address' => 'Lūdzu ievadi piegādes adresi.']);
         }
 
+        // Pārbauda, vai katrs produkts vēl ir pieejams nepieciešamajā daudzumā.
         foreach ($items as $item) {
             if (!$item->product || $item->quantity > $item->product->stock) {
                 return redirect()->route('cart.index')
@@ -75,6 +90,7 @@ class CheckoutController extends Controller
             }
         }
 
+        // Aprēķina kopējo summu un sagatavo preču kopsavilkumu.
         $subtotal = $items->sum(fn ($item) => (float) $item->unit_price * $item->quantity);
         $totalItems = $items->sum('quantity');
         $itemsSummary = $items->map(function ($item) {
@@ -86,7 +102,9 @@ class CheckoutController extends Controller
             ];
         })->values();
 
+        // Saglabā pasūtījumu un pozīcijas vienā transakcijā.
         DB::transaction(function () use ($items, $subtotal, $data, $totalItems, $itemsSummary) {
+            // Sagatavo pasūtījuma datus, ieskaitot kartes pēdējās 4 ciparus.
             $payload = [
                 'user_id' => auth()->id(),
                 'customer_name' => $data['customer_name']
@@ -105,14 +123,17 @@ class CheckoutController extends Controller
                 'notes' => $data['notes'] ?? null,
             ];
 
+            // Saderībai ar vecu shēmu: ja ir product_id kolonna, aizpilda tikai vienam produktam.
             if (Schema::hasColumn('orders', 'product_id')) {
                 $payload['product_id'] = $items->count() === 1
                     ? $items->first()->product_id
                     : null;
             }
 
+            // Izveido pasūtījumu.
             $order = Order::create($payload);
 
+            // Saglabā pasūtījuma rindas un samazina noliktavas atlikumu.
             foreach ($items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -124,6 +145,7 @@ class CheckoutController extends Controller
                 $item->product->decrement('stock', $item->quantity);
             }
 
+            // Iztīra grozu pēc veiksmīgas pasūtījuma izveides.
             CartItem::where('user_id', auth()->id())->delete();
         });
 

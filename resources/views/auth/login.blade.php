@@ -400,7 +400,7 @@
                         <input type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
                         Atcerēties mani
                     </label>
-                    <a href="javascript:void(0)" style="color:var(--accent); font-weight:600; text-decoration:none;">Aizmirsi paroli?</a>
+                    <a href="{{ route('password.request') }}" style="color:var(--accent); font-weight:600; text-decoration:none;">Aizmirsi paroli?</a>
                 </div>
                 <button type="submit" class="primary-btn">Ieiet</button>
                 @if ($errors->any())

@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /**
+     * Izveido jaunu pasūtījumu konkrētam produktam.
+     */
     public function store(Request $request, Product $product)
     {
-        // Validācija
+        // Validē klienta un piegādes datus, kā arī pasūtīto daudzumu.
         $data = $request->validate([
             'customer_name'   => 'required|string|max:255',
             'customer_phone'  => 'required|string|max:50',
@@ -21,18 +24,18 @@ class OrderController extends Controller
             'delivery_address' => 'nullable|string|max:255',
         ]);
 
-        // Ja piegāde, bet nav adreses
+        // Ja izvēlēta piegāde, adrese ir obligāta.
         if ($data['delivery_method'] === 'delivery' && empty($data['delivery_address'])) {
             return back()
                 ->withInput()
                 ->withErrors(['delivery_address' => 'Lūdzu norādi piegādes adresi vai pakomātu.']);
         }
 
-        // Aprēķina kopējo cenu
+        // Aprēķina kopējo cenu, ņemot vērā produkta cenu un daudzumu.
         $qty   = $data['quantity'];
         $total = $product->price * $qty;
 
-        // Saglabā pasūtījumu DB
+        // Saglabā pasūtījumu datubāzē ar statusu "new".
         Order::create([
             'product_id'      => $product->id,
             'customer_name'   => $data['customer_name'],

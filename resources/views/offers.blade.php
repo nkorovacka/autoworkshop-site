@@ -4,13 +4,220 @@
     <meta charset="UTF-8">
     <title>Piedāvājumi un pasākumi - Auto Detailing Workshop</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+</head>
+<body>
+    <!-- Galvene ar navigāciju un lietotāja stāvokli -->
+    <header>
+        <nav>
+            <div class="logo">Auto Detailing</div>
+            <ul class="nav-links">
+                <li><a href="{{ route('home') }}">Galvenā</a></li>
+                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                <li><a href="{{ route('offers.index') }}" class="active">Piedāvājumi</a></li>
+                <li><a href="{{ route('our-work') }}">Darbi</a></li>
+            </ul>
+            <div class="nav-right">
+                @auth
+                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
+                    <div class="auth-buttons signed-in">
+                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
+                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
+                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                            @csrf
+                            <button type="submit" class="btn-logout">Iziet</button>
+                        </form>
+                    </div>
+                @else
+                    <button class="icon-button" title="Profils">👤</button>
+                    <div class="auth-buttons">
+                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
+                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
+                    </div>
+                @endauth
+            </div>
+        </nav>
+    </header>
+
+    <!-- Lapas virsraksts un īss ievads -->
+    <div class="hero">
+        <h1>Piedāvājumi un pasākumi</h1>
+        <p>Izmanto īpašos piedāvājumus un piedalies mūsu vebināros, lai uzzinātu vairāk par auto kopšanu</p>
+    </div>
+
+    <!-- Filtru pogas vebināru/pasākumu atlasīšanai -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">Visi vebināri</button>
+        <button class="filter-tab" data-filter="online">Tiešsaistes lekcijas</button>
+        <button class="filter-tab" data-filter="in_person">Klātienes pasākumi</button>
+    </div>
+
+    <!-- Flash paziņojumi par veiksmēm/kļūdām -->
+    <div id="messages">
+        @if (session('success'))
+            <div class="message success">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="message error">{{ session('error') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="message error">{{ $errors->first() }}</div>
+        @endif
+    </div>
+
+    <!-- Piedāvājumu režģis ar kartītēm -->
+    <div class="offers-container">
+        @if($offers->isEmpty())
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">📭</div>
+                <h3>Nav aktīvu piedāvājumu</h3>
+                <p>Šobrīd nav pieejamu piedāvājumu šajā kategorijā</p>
+            </div>
+        @else
+            <div class="offers-grid" id="offersGrid">
+                @foreach($offers as $offer)
+                    @php
+                        $isFull = $offer->is_limited && $offer->capacity && $offer->registrations_count >= $offer->capacity;
+                        $spotsPercent = $offer->is_limited && $offer->capacity
+                            ? min(100, round($offer->registrations_count / $offer->capacity * 100))
+                            : 0;
+                        $eventDate = $offer->event_date
+                            ? \Carbon\Carbon::parse($offer->event_date)->locale('lv')->translatedFormat('d. F H:i')
+                            : null;
+                    @endphp
+                    <div class="offer-card"
+                         data-type="{{ $offer->type }}"
+                         data-format="{{ $offer->format ?? 'online' }}">
+                        <div class="offer-header">
+                            <div class="offer-meta">
+                                <span class="offer-type">🎥 Vebinārs</span>
+                                <span class="offer-format {{ ($offer->format ?? 'online') === 'in_person' ? 'in-person' : 'online' }}">
+                                    {{ ($offer->format ?? 'online') === 'in_person' ? '👥 Klātienē' : '💻 Tiešsaistē' }}
+                                </span>
+                            </div>
+                            <h3>{{ $offer->title }}</h3>
+                            @if($eventDate)
+                                <div class="offer-date">
+                                    📅 {{ $eventDate }}
+                                </div>
+                            @endif
+                        </div>
+                        <div class="offer-body">
+                            <p class="offer-description">{{ $offer->description }}</p>
+                            @if($offer->is_limited && $offer->capacity)
+                                <div class="offer-spots">
+                                    <div class="spots-progress">
+                                        <div class="spots-fill" style="width: {{ $spotsPercent }}%"></div>
+                                    </div>
+                                    <div class="spots-text">
+                                        {{ $offer->registrations_count }}/{{ $offer->capacity }} vietas
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="offer-footer">
+                            @auth
+                                <button type="button"
+                                        class="offer-btn webinar webinar-trigger"
+                                        data-offer-id="{{ $offer->id }}"
+                                        data-offer-title="{{ $offer->title }}"
+                                        data-offer-action="{{ route('offers.signup', $offer) }}"
+                                        {{ $isFull ? 'disabled' : '' }}>
+                                    {{ $isFull ? 'Pilns' : 'Pieteikties vebināram' }}
+                                </button>
+                            @else
+                                <a class="offer-btn webinar" href="{{ route('login') }}">
+                                    Ieiet, lai pieteiktos
+                                </a>
+                            @endauth
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    <!-- Reģistrācijas modālais logs -->
+    <div class="modal" id="registrationModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 id="modalTitle">Pieteikties pasākumam</h2>
+            <form class="modal-form" id="registrationForm" method="POST" action="">
+                @csrf
+                <input type="hidden" id="modalOfferId" name="offer_id">
+                <div class="form-field">
+                    <label for="modalName">Vārds, Uzvārds *</label>
+                    <input type="text"
+                           id="modalName"
+                           name="name"
+                           value="@auth{{ auth()->user()->name }}@endauth"
+                           {{ auth()->check() ? 'readonly' : '' }}
+                           required>
+                </div>
+                <div class="form-field">
+                    <label for="modalEmail">E-pasts *</label>
+                    <input type="email"
+                           id="modalEmail"
+                           name="email"
+                           value="@auth{{ auth()->user()->email }}@endauth"
+                           {{ auth()->check() ? 'readonly' : '' }}
+                           required>
+                </div>
+                <button type="submit" class="modal-submit">Pieteikties</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
+    <footer>
+        <div class="footer-wrapper">
+            <div class="footer-column">
+                <h4>Salons</h4>
+                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
+                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
+            </div>
+            <div class="footer-column">
+                <h4>Kontakti</h4>
+                <ul>
+                    <li>📞 +371 2000 0000</li>
+                    <li>✉️ info@detailing.lv</li>
+                    <li>WhatsApp & Telegram</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Ātrās saites</h4>
+                <ul>
+                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
+                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
+                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
+                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Sekojiet mums</h4>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
+        </div>
+    </footer>
+
+    <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
     <style>
+        /* Globālā nullēšana un kastes modelis */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* Krāsu mainīgie un palete visai lapai */
         :root {
             --accent: #ff5c35;
             --accent-dark: #d9461f;
@@ -18,6 +225,7 @@
             --ink: #1a1a1a;
         }
 
+        /* Pamatteksts un fons */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
@@ -25,7 +233,7 @@
             background: #fafafa;
         }
 
-        /* Header */
+        /* Galvenes izkārtojums un navigācijas josla */
         header {
             background: white;
             border-bottom: 1px solid #e8e8e8;
@@ -202,7 +410,7 @@
             background: #333;
         }
 
-        /* Hero Section */
+        /* Hero sadaļa ar virsrakstu un aprakstu */
         .hero {
             max-width: 1400px;
             margin: 0 auto;
@@ -224,7 +432,7 @@
             margin: 0 auto;
         }
 
-        /* Filter Tabs */
+        /* Filtru pogu grupa */
         .filter-tabs {
             max-width: 1400px;
             margin: 0 auto 3rem;
@@ -254,7 +462,7 @@
             border-color: var(--accent);
         }
 
-        /* Offers Grid */
+        /* Piedāvājumu režģa konteiners */
         .offers-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -267,7 +475,7 @@
             gap: 2rem;
         }
 
-        /* Offer Card */
+        /* Piedāvājumu kartīšu noformējums */
         .offer-card {
             background: white;
             border-radius: 20px;
@@ -412,7 +620,7 @@
             background: var(--accent-dark);
         }
 
-        /* Modal */
+        /* Modālā loga noformējums un animācija */
         .modal {
             display: none;
             position: fixed;
@@ -495,7 +703,7 @@
             background: var(--accent-dark);
         }
 
-        /* Empty State */
+        /* Tukšā stāvokļa (nav piedāvājumu) izkārtojums */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -515,7 +723,7 @@
             color: #666;
         }
 
-        /* Messages */
+        /* Paziņojumu bloki */
         .message {
             max-width: 1400px;
             margin: 0 auto 2rem;
@@ -537,7 +745,7 @@
             border: 1px solid #f5c6cb;
         }
 
-        /* Responsive */
+        /* Responsivitāte planšetēm un telefoniem */
         @media (max-width: 968px) {
             .nav-links {
                 display: none;
@@ -562,6 +770,7 @@
             }
         }
 
+        /* Kājenes izkārtojums */
         footer {
             background: white;
             border-top: 1px solid #e8e8e8;
@@ -610,211 +819,13 @@
             border-top: 1px solid #f0f0f0;
         }
     </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">Auto Detailing</div>
-            <ul class="nav-links">
-                <li><a href="{{ route('home') }}">Galvenā</a></li>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}" class="active">Piedāvājumi</a></li>
-                <li><a href="{{ route('our-work') }}">Darbi</a></li>
-            </ul>
-            <div class="nav-right">
-                @auth
-                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                    <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                            @csrf
-                            <button type="submit" class="btn-logout">Iziet</button>
-                        </form>
-                    </div>
-                @else
-                    <button class="icon-button" title="Profils">👤</button>
-                    <div class="auth-buttons">
-                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
-    </header>
-
-    <div class="hero">
-        <h1>Piedāvājumi un pasākumi</h1>
-        <p>Izmanto īpašos piedāvājumus un piedalies mūsu vebināros, lai uzzinātu vairāk par auto kopšanu</p>
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">Visi vebināri</button>
-        <button class="filter-tab" data-filter="online">Tiešsaistes lekcijas</button>
-        <button class="filter-tab" data-filter="in_person">Klātienes pasākumi</button>
-    </div>
-
-    <!-- Messages -->
-    <div id="messages">
-        @if (session('success'))
-            <div class="message success">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="message error">{{ session('error') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="message error">{{ $errors->first() }}</div>
-        @endif
-    </div>
-
-    <!-- Offers Grid -->
-    <div class="offers-container">
-        @if($offers->isEmpty())
-            <div class="empty-state" id="emptyState">
-                <div class="empty-state-icon">📭</div>
-                <h3>Nav aktīvu piedāvājumu</h3>
-                <p>Šobrīd nav pieejamu piedāvājumu šajā kategorijā</p>
-            </div>
-        @else
-            <div class="offers-grid" id="offersGrid">
-                @foreach($offers as $offer)
-                    @php
-                        $isFull = $offer->is_limited && $offer->capacity && $offer->registrations_count >= $offer->capacity;
-                        $spotsPercent = $offer->is_limited && $offer->capacity
-                            ? min(100, round($offer->registrations_count / $offer->capacity * 100))
-                            : 0;
-                        $eventDate = $offer->event_date
-                            ? \Carbon\Carbon::parse($offer->event_date)->locale('lv')->translatedFormat('d. F H:i')
-                            : null;
-                    @endphp
-                    <div class="offer-card"
-                         data-type="{{ $offer->type }}"
-                         data-format="{{ $offer->format ?? 'online' }}">
-                        <div class="offer-header">
-                            <div class="offer-meta">
-                                <span class="offer-type">🎥 Vebinārs</span>
-                                <span class="offer-format {{ ($offer->format ?? 'online') === 'in_person' ? 'in-person' : 'online' }}">
-                                    {{ ($offer->format ?? 'online') === 'in_person' ? '👥 Klātienē' : '💻 Tiešsaistē' }}
-                                </span>
-                            </div>
-                            <h3>{{ $offer->title }}</h3>
-                            @if($eventDate)
-                                <div class="offer-date">
-                                    📅 {{ $eventDate }}
-                                </div>
-                            @endif
-                        </div>
-                        <div class="offer-body">
-                            <p class="offer-description">{{ $offer->description }}</p>
-                            @if($offer->is_limited && $offer->capacity)
-                                <div class="offer-spots">
-                                    <div class="spots-progress">
-                                        <div class="spots-fill" style="width: {{ $spotsPercent }}%"></div>
-                                    </div>
-                                    <div class="spots-text">
-                                        {{ $offer->registrations_count }}/{{ $offer->capacity }} vietas
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="offer-footer">
-                            @auth
-                                <button type="button"
-                                        class="offer-btn webinar webinar-trigger"
-                                        data-offer-id="{{ $offer->id }}"
-                                        data-offer-title="{{ $offer->title }}"
-                                        data-offer-action="{{ route('offers.signup', $offer) }}"
-                                        {{ $isFull ? 'disabled' : '' }}>
-                                    {{ $isFull ? 'Pilns' : 'Pieteikties vebināram' }}
-                                </button>
-                            @else
-                                <a class="offer-btn webinar" href="{{ route('login') }}">
-                                    Ieiet, lai pieteiktos
-                                </a>
-                            @endauth
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-    </div>
-
-    <!-- Registration Modal -->
-    <div class="modal" id="registrationModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">×</button>
-            <h2 id="modalTitle">Pieteikties pasākumam</h2>
-            <form class="modal-form" id="registrationForm" method="POST" action="">
-                @csrf
-                <input type="hidden" id="modalOfferId" name="offer_id">
-                <div class="form-field">
-                    <label for="modalName">Vārds, Uzvārds *</label>
-                    <input type="text"
-                           id="modalName"
-                           name="name"
-                           value="@auth{{ auth()->user()->name }}@endauth"
-                           {{ auth()->check() ? 'readonly' : '' }}
-                           required>
-                </div>
-                <div class="form-field">
-                    <label for="modalEmail">E-pasts *</label>
-                    <input type="email"
-                           id="modalEmail"
-                           name="email"
-                           value="@auth{{ auth()->user()->email }}@endauth"
-                           {{ auth()->check() ? 'readonly' : '' }}
-                           required>
-                </div>
-                <button type="submit" class="modal-submit">Pieteikties</button>
-            </form>
-        </div>
-    </div>
-
-    <footer>
-        <div class="footer-wrapper">
-            <div class="footer-column">
-                <h4>Salons</h4>
-                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-            </div>
-            <div class="footer-column">
-                <h4>Kontakti</h4>
-                <ul>
-                    <li>📞 +371 2000 0000</li>
-                    <li>✉️ info@detailing.lv</li>
-                    <li>WhatsApp & Telegram</li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Ātrās saites</h4>
-                <ul>
-                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Sekojiet mums</h4>
-                <ul>
-                    <li><a href="#">Instagram</a></li>
-                    <li><a href="#">Facebook</a></li>
-                    <li><a href="#">YouTube</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-        </div>
-    </footer>
-
-    <script>
+<script>
+        // Filtru pogu un piedāvājumu kartīšu references.
         const filterTabs = document.querySelectorAll('.filter-tab');
         const offerCards = document.querySelectorAll('.offer-card');
         const emptyState = document.getElementById('emptyState');
 
+        // Filtru klikšķi: nosaka, kuras kartītes rādīt.
         filterTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 filterTabs.forEach(t => t.classList.remove('active'));
@@ -822,6 +833,7 @@
                 const filter = tab.dataset.filter;
                 let visibleCount = 0;
 
+                // Parāda tikai tās kartītes, kas atbilst filtram.
                 offerCards.forEach(card => {
                     if (!card) return;
                     const format = card.dataset.format || 'online';
@@ -837,12 +849,14 @@
                     }
                 });
 
+                // Ja neviena kartīte nav redzama, parāda tukšo stāvokli.
                 if (emptyState) {
                     emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
                 }
             });
         });
 
+        // Modālā loga elementi un pašreizējā lietotāja dati.
         const registrationModal = document.getElementById('registrationModal');
         const registrationForm = document.getElementById('registrationForm');
         const modalTitle = document.getElementById('modalTitle');
@@ -854,6 +868,7 @@
             email: @json(auth()->check() ? auth()->user()->email : null),
         };
 
+        // Ielādē lietotāja datus modālajā formā (ja ir pieslēgts).
         function fillUserData() {
             if (modalName && currentUser.name) {
                 modalName.value = currentUser.name;
@@ -866,6 +881,7 @@
         }
         fillUserData();
 
+        // Poga "Pieteikties": atver modālo logu un iestata datus.
         document.querySelectorAll('.webinar-trigger').forEach(btn => {
             btn.addEventListener('click', () => {
                 modalTitle.textContent = `Pieteikties: ${btn.dataset.offerTitle}`;
@@ -876,19 +892,22 @@
             });
         });
 
+        // Aizver modālo logu un atiestata formu.
         function closeModal() {
             registrationModal.classList.remove('active');
             registrationForm.reset();
             fillUserData();
         }
 
+        // Padara closeModal pieejamu HTML onclick atribūtam.
         window.closeModal = closeModal;
 
+        // Aizver modāli, ja klikšķis notiek uz fona (nevis satura).
         registrationModal?.addEventListener('click', (e) => {
             if (e.target === registrationModal) {
                 closeModal();
             }
         });
-    </script>
+</script>
 </body>
 </html>

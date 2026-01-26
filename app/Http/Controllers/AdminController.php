@@ -14,33 +14,47 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
+    /**
+     * Admin paneļa sākumlapa ar kopsavilkuma statistiku un pēdējiem ierakstiem.
+     */
     public function index()
     {
+        // Apkopo galvenos skaitļus informācijas panelim.
         $stats = [
             'bookings' => Booking::count(),
             'orders' => Order::count(),
             'webinar_registrations' => OfferRegistration::count(),
         ];
 
+        // Ielādē pēdējos pieteikumus un pasūtījumus ātrai pārskatīšanai.
         $latestBookings = Booking::latest()->take(5)->get();
         $latestOrders = Order::latest()->take(5)->get();
 
         return view('admin.dashboard', compact('stats', 'latestBookings', 'latestOrders'));
     }
 
+    /**
+     * Parāda pieteikumu sarakstu ar lapošanu.
+     */
     public function bookings()
     {
+        // Pēdējie pieteikumi, sadalīti lapās.
         $bookings = Booking::latest()->paginate(15);
 
         return view('admin.bookings', compact('bookings'));
     }
 
+    /**
+     * Atjaunina pieteikuma statusu (apstiprināts/atteikts/gaida).
+     */
     public function updateBookingStatus(Request $request, Booking $booking): RedirectResponse
     {
+        // Validē pieļaujamos statusus, lai nepieļautu nekorektus datus.
         $data = $request->validate([
             'status' => 'required|in:approved,rejected,pending',
         ]);
 
+        // Saglabā jauno statusu datubāzē.
         $booking->update([
             'status' => $data['status'],
         ]);
@@ -48,16 +62,25 @@ class AdminController extends Controller
         return back()->with('success', 'Pieteikuma statuss atjaunināts.');
     }
 
+    /**
+     * Admin produkti un ar tiem saistītie pasūtījumi.
+     */
     public function products()
     {
+        // Visi produkti pārskatīšanai, jaunākie augšā.
         $products = Product::orderByDesc('created_at')->get();
+        // Pasūtījumi ar precēm, lai uzreiz redzētu pasūtījuma sastāvu.
         $orders = Order::with(['items.product'])->latest()->paginate(15);
 
         return view('admin.products', compact('products', 'orders'));
     }
 
+    /**
+     * Izveido jaunu produktu, ja dati ir korekti un attēls validēts.
+     */
     public function storeProduct(Request $request): RedirectResponse
     {
+        // Validē ievades datus un failu ierobežojumus.
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
@@ -67,11 +90,13 @@ class AdminController extends Controller
             'image' => 'nullable|image|max:4096',
         ]);
 
+        // Saglabā attēlu, ja tas ir augšupielādēts.
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
         }
 
+        // Izveido jaunu produktu ar noklusējuma redzamību.
         Product::create([
             'name' => $data['name'],
             'price' => $data['price'],
@@ -85,8 +110,12 @@ class AdminController extends Controller
         return back()->with('success', 'Produkts pievienots.');
     }
 
+    /**
+     * Atjaunina esoša produkta datus un, ja nepieciešams, arī attēlu.
+     */
     public function updateProduct(Request $request, Product $product): RedirectResponse
     {
+        // Validē ievades laukus un attēla tipu/izmēru.
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
@@ -96,6 +125,7 @@ class AdminController extends Controller
             'image' => 'nullable|image|max:4096',
         ]);
 
+        // Sagatavo datu masīvu atjaunināšanai.
         $payload = [
             'name' => $data['name'],
             'price' => $data['price'],
@@ -104,6 +134,7 @@ class AdminController extends Controller
             'supplier' => $data['supplier'] ?? null,
         ];
 
+        // Ja pievienots jauns attēls, dzēš veco un saglabā jauno.
         if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
@@ -111,13 +142,18 @@ class AdminController extends Controller
             $payload['image'] = $request->file('image')->store('products', 'public');
         }
 
+        // Saglabā izmaiņas datubāzē.
         $product->update($payload);
 
         return back()->with('success', 'Produkts atjaunināts.');
     }
 
+    /**
+     * Pārslēdz produkta redzamību publiskajā katalogā.
+     */
     public function toggleProduct(Product $product): RedirectResponse
     {
+        // Apgriež esošo redzamības stāvokli.
         $product->update([
             'is_visible' => !$product->is_visible,
         ]);
@@ -125,30 +161,43 @@ class AdminController extends Controller
         return back()->with('success', 'Produkta redzamība atjaunināta.');
     }
 
+    /**
+     * Dzēš produktu un saistīto attēlu no diska.
+     */
     public function destroyProduct(Product $product): RedirectResponse
     {
+        // Noņem attēla failu, lai nepaliek lieki resursi.
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
 
+        // Dzēš produktu no datubāzes.
         $product->delete();
 
         return back()->with('success', 'Produkts dzēsts.');
     }
 
+    /**
+     * Atjaunina pasūtījuma statusu un koriģē krājumu, ja pasūtījums atcelts/atjaunots.
+     */
     public function updateOrderStatus(Request $request, Order $order): RedirectResponse
     {
+        // Atļautie statusi, lai uzturētu konsekvenci.
         $data = $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled',
         ]);
 
+        // Fiksē sākotnējo un jauno statusu salīdzināšanai.
         $originalStatus = $order->status ?? 'pending';
         $newStatus = $data['status'];
 
+        // Ielādē pasūtījuma preces krājumu korekcijām.
         $order->loadMissing('items.product');
 
+        // Ja pasūtījumu atceļ, krājums jāatgriež noliktavā.
         if ($originalStatus !== 'cancelled' && $newStatus === 'cancelled') {
             $this->adjustStock($order, 'increment');
+        // Ja pasūtījumu atjauno, krājums jānoņem no noliktavas.
         } elseif ($originalStatus === 'cancelled' && $newStatus !== 'cancelled') {
             if (!$this->canDecreaseStock($order)) {
                 return back()->with('error', 'Nav pietiekams atlikums, lai atjaunotu pasūtījumu.');
@@ -156,6 +205,7 @@ class AdminController extends Controller
             $this->adjustStock($order, 'decrement');
         }
 
+        // Saglabā jauno statusu.
         $order->update([
             'status' => $newStatus,
         ]);
@@ -163,6 +213,9 @@ class AdminController extends Controller
         return back()->with('success', 'Pasūtījuma statuss atjaunināts.');
     }
 
+    /**
+     * Pielāgo krājumu uz augšu vai leju visām pasūtījuma precēm.
+     */
     protected function adjustStock(Order $order, string $direction): void
     {
         foreach ($order->items as $item) {
@@ -171,6 +224,7 @@ class AdminController extends Controller
                 continue;
             }
 
+            // Palielina vai samazina noliktavas atlikumu.
             if ($direction === 'increment') {
                 $product->increment('stock', $item->quantity);
             } elseif ($direction === 'decrement') {
@@ -179,6 +233,9 @@ class AdminController extends Controller
         }
     }
 
+    /**
+     * Pārbauda, vai visām pasūtījuma precēm pietiek krājuma samazināšanai.
+     */
     protected function canDecreaseStock(Order $order): bool
     {
         foreach ($order->items as $item) {
@@ -186,6 +243,7 @@ class AdminController extends Controller
             if (!$product) {
                 continue;
             }
+            // Ja kādai precei nepietiek, atjaunošana nav iespējama.
             if ($product->stock < $item->quantity) {
                 return false;
             }
@@ -194,16 +252,24 @@ class AdminController extends Controller
         return true;
     }
 
+    /**
+     * Rāda piedāvājumus un reģistrācijas.
+     */
     public function offers()
     {
+        // Piedāvājumi sakārtoti pēc datuma, reģistrācijas ar lietotāja datiem.
         $offers = Offer::orderByDesc('event_date')->get();
         $registrations = OfferRegistration::with('offer', 'user')->latest()->paginate(20);
 
         return view('admin.offers', compact('offers', 'registrations'));
     }
 
+    /**
+     * Izveido jaunu piedāvājumu (piem., tiešsaistes webināru).
+     */
     public function storeOffer(Request $request): RedirectResponse
     {
+        // Validē ievadi un datuma/formatu prasības.
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -213,14 +279,17 @@ class AdminController extends Controller
             'is_limited' => 'nullable|boolean',
         ]);
 
+        // Ja pasākums ir ierobežots, vietu skaits ir obligāts.
         if ($request->boolean('is_limited') && empty($data['capacity'])) {
             return back()->withInput()->with('error', 'Norādi vietu skaitu, ja izvēlies ierobežotu pasākumu.');
         }
 
+        // Ja vietu skaits nav norādīts, nepieciešams apstiprinājums par neierobežotību.
         if (empty($data['capacity']) && !$request->boolean('confirm_unlimited')) {
             return back()->withInput()->with('error', 'Apstiprini, ka vēlies neierobežotu vietu skaitu.');
         }
 
+        // Saglabā jauno piedāvājumu ar noklusējuma parametriem.
         Offer::create([
             'title' => $data['title'],
             'description' => $data['description'],
@@ -237,8 +306,12 @@ class AdminController extends Controller
         return back()->with('success', 'Piedāvājums pievienots.');
     }
 
+    /**
+     * Atjaunina piedāvājuma datus un pieejamību.
+     */
     public function updateOffer(Request $request, Offer $offer): RedirectResponse
     {
+        // Validē ievades laukus un statusa norādes.
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -249,14 +322,17 @@ class AdminController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
+        // Ja pasākums ir ierobežots, vietu skaits ir obligāts.
         if ($request->boolean('is_limited') && empty($data['capacity'])) {
             return back()->withInput()->with('error', 'Norādi vietu skaitu, ja izvēlies ierobežotu pasākumu.');
         }
 
+        // Ja vietu skaits nav norādīts, nepieciešams apstiprinājums par neierobežotību.
         if (empty($data['capacity']) && !$request->boolean('confirm_unlimited')) {
             return back()->withInput()->with('error', 'Apstiprini, ka vēlies neierobežotu vietu skaitu.');
         }
 
+        // Saglabā izmaiņas piedāvājumam.
         $offer->update([
             'title' => $data['title'],
             'description' => $data['description'],
@@ -270,34 +346,51 @@ class AdminController extends Controller
         return back()->with('success', 'Piedāvājums atjaunināts.');
     }
 
+    /**
+     * Dzēš piedāvājumu un tā reģistrācijas.
+     */
     public function destroyOffer(Offer $offer): RedirectResponse
     {
+        // Noņem saistītās reģistrācijas, lai netiek atstātas bāreņa rindas.
         $offer->registrations()->delete();
         $offer->delete();
 
         return back()->with('success', 'Piedāvājums dzēsts.');
     }
 
+    /**
+     * Dzēš konkrētu reģistrāciju un koriģē skaitītāju.
+     */
     public function destroyRegistration(OfferRegistration $registration): RedirectResponse
     {
+        // Samazina reģistrāciju skaitu, ja ir piesaistīts piedāvājums.
         if ($registration->offer && $registration->offer->registrations_count > 0) {
             $registration->offer->decrement('registrations_count');
         }
 
+        // Dzēš pašu reģistrāciju.
         $registration->delete();
 
         return back()->with('success', 'Pieteikums dzēsts.');
     }
 
+    /**
+     * Parāda "mūsu darbi" vienumus sakārtotus pēc pozīcijas.
+     */
     public function workItems()
     {
+        // Ielādē visus vienumus, lai admin var tos pārkārtot.
         $items = WorkItem::orderBy('position')->get();
 
         return view('admin.work-items', compact('items'));
     }
 
+    /**
+     * Izveido jaunu "mūsu darbi" vienumu ar attēliem.
+     */
     public function storeWorkItem(Request $request): RedirectResponse
     {
+        // Validē laukus un attēlu failu ierobežojumus.
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'tag' => 'nullable|string|max:255',
@@ -307,6 +400,7 @@ class AdminController extends Controller
             'after_image' => 'nullable|image|max:4096',
         ]);
 
+        // Sagatavo datu masīvu izveidei ar noklusējuma vērtībām.
         $payload = [
             'title' => $data['title'],
             'tag' => $data['tag'] ?? null,
@@ -315,6 +409,7 @@ class AdminController extends Controller
             'is_visible' => true,
         ];
 
+        // Saglabā "pirms" un "pēc" attēlus, ja tie pievienoti.
         if ($request->hasFile('before_image')) {
             $payload['before_image'] = $request->file('before_image')->store('work-items', 'public');
         }
@@ -322,13 +417,18 @@ class AdminController extends Controller
             $payload['after_image'] = $request->file('after_image')->store('work-items', 'public');
         }
 
+        // Izveido jaunu darba vienumu.
         WorkItem::create($payload);
 
         return back()->with('success', 'Darbs pievienots.');
     }
 
+    /**
+     * Atjaunina "mūsu darbi" vienumu un nomaina attēlus, ja tie tiek augšupielādēti.
+     */
     public function updateWorkItem(Request $request, WorkItem $workItem): RedirectResponse
     {
+        // Validē ievades datus un attēlu failus.
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'tag' => 'nullable|string|max:255',
@@ -339,6 +439,7 @@ class AdminController extends Controller
             'after_image' => 'nullable|image|max:4096',
         ]);
 
+        // Sagatavo atjaunināmo datu masīvu.
         $payload = [
             'title' => $data['title'],
             'tag' => $data['tag'] ?? null,
@@ -347,6 +448,7 @@ class AdminController extends Controller
             'is_visible' => $request->boolean('is_visible'),
         ];
 
+        // Nomaina "pirms" attēlu, dzēšot veco failu.
         if ($request->hasFile('before_image')) {
             if ($workItem->before_image) {
                 Storage::disk('public')->delete($workItem->before_image);
@@ -360,13 +462,18 @@ class AdminController extends Controller
             $payload['after_image'] = $request->file('after_image')->store('work-items', 'public');
         }
 
+        // Saglabā izmaiņas datubāzē.
         $workItem->update($payload);
 
         return back()->with('success', 'Darbs atjaunināts.');
     }
 
+    /**
+     * Dzēš "mūsu darbi" vienumu un saistītos attēlus no diska.
+     */
     public function destroyWorkItem(WorkItem $workItem): RedirectResponse
     {
+        // Dzēš attēlus, ja tie eksistē, lai neatstātu liekus failus.
         if ($workItem->before_image) {
             Storage::disk('public')->delete($workItem->before_image);
         }
@@ -374,6 +481,7 @@ class AdminController extends Controller
             Storage::disk('public')->delete($workItem->after_image);
         }
 
+        // Dzēš vienumu no datubāzes.
         $workItem->delete();
 
         return back()->with('success', 'Darbs dzēsts.');

@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Aizpildāmie lauki masveida piešķiršanai (fillable).
      *
      * @var list<string>
      */
@@ -25,7 +25,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Lauki, kas jāslēpj serializācijā (piem., JSON atbildēs).
      *
      * @var list<string>
      */
@@ -35,7 +35,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Lauku tipu pārveidošana (casts).
      *
      * @return array<string, string>
      */
@@ -48,21 +48,33 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Nosaka, vai lietotājs ir administrators.
+     */
     public function isAdmin(): bool
     {
         return (bool) $this->is_admin;
     }
 
+    /**
+     * Lietotāja vebināru pieteikumi.
+     */
     public function offerRegistrations()
     {
         return $this->hasMany(OfferRegistration::class);
     }
 
+    /**
+     * Lietotāja pakalpojumu rezervācijas.
+     */
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * Lietotāja pasūtījumi.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);

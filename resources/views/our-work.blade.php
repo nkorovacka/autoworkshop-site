@@ -4,73 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mūsu darbi – Auto Detailing Workshop</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --accent:#ff5c35;
-            --accent-dark:#d9461f;
-            --accent-light:#fff1ec;
-            --ink:#1a1a1a;
-            --muted:#6c6c6c;
-        }
-        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#fafafa; color:var(--ink); line-height:1.6; }
-        header { background:white; border-bottom:1px solid #e8e8e8; position:sticky; top:0; z-index:100; }
-        nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-        .logo { font-size:1.3rem; font-weight:600; letter-spacing:-0.5px; }
-        .nav-links { display:flex; list-style:none; gap:2.5rem; }
-        .nav-links a { text-decoration:none; color:#666; font-weight:500; }
-        .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-        .nav-right { display:flex; align-items:center; gap:1.2rem; }
-        .icon-button { background:none; border:none; font-size:1.2rem; color:#666; cursor:pointer; }
-        .auth-buttons { display:flex; gap:0.9rem; }
-        .auth-buttons.signed-in { gap:0.6rem; align-items:center; }
-        .btn-login, .btn-signup, .btn-profile, .btn-cart, .btn-logout {
-            border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none;
-            display:inline-flex; align-items:center; justify-content:center; padding:0.45rem 1.1rem;
-        }
-        .btn-login { border:1px solid #e8e8e8; background:white; color:var(--ink); }
-        .btn-login:hover { background:#f5f5f5; }
-        .btn-signup { border:none; background:var(--ink); color:white; }
-        .btn-signup:hover { background:#333; }
-        .btn-profile { border:none; background:var(--ink); color:white; gap:0.3rem; }
-        .btn-profile:hover { background:#333; }
-        .btn-cart { border:1px solid #e8e8e8; background:white; color:var(--ink); gap:0.3rem; }
-        .btn-cart:hover { background:#f5f5f5; }
-        .btn-logout { border:none; background:#f1f1f1; color:var(--ink); gap:0.3rem; }
-        .btn-logout:hover { background:#dedede; }
-        .user-greeting { font-size:0.85rem; font-weight:600; color:var(--ink); white-space:nowrap; }
-        main { max-width:1400px; margin:0 auto; padding:4rem 2rem 3rem; }
-        .hero { text-align:center; margin-bottom:3rem; }
-        .hero h1 { font-size:2.8rem; margin-bottom:0.5rem; }
-        .hero p { color:var(--muted); max-width:700px; margin:0 auto; }
-        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
-        .work-card { background:white; border:1px solid #f0f0f0; border-radius:20px; padding:1.5rem; box-shadow:0 15px 35px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
-        .card-title { font-size:1.2rem; }
-        .slider { position:relative; border-radius:16px; overflow:hidden; border:1px solid #ededed; background:#f7f7f7; height:220px; display:flex; align-items:center; justify-content:center; }
-        .slider img { width:100%; height:100%; object-fit:cover; display:block; }
-        .slider button { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.55); color:white; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; }
-        .slider button:hover { background:rgba(0,0,0,0.75); }
-        .slider button.prev { left:10px; }
-        .slider button.next { right:10px; }
-        .tag { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.15rem; color:#ff814f; }
-        .placeholder-note { font-size:0.85rem; color:#888; }
-        .faq { margin-top:4rem; background:white; border-radius:24px; border:1px solid #e8e8e8; padding:3rem; }
-        .faq h2 { text-align:center; margin-bottom:1.5rem; font-size:2rem; }
-        details { border:1px solid #f0f0f0; border-radius:14px; padding:1rem 1.2rem; margin-bottom:1rem; background:#fff; }
-        summary { cursor:pointer; font-weight:600; }
-        summary::marker { color:var(--accent); }
-        details p { margin-top:0.6rem; color:#555; }
-        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
-        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
-        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
-        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-        .footer-column a { text-decoration:none; color:#666; }
-        .footer-column a:hover { color:var(--ink); }
-        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
-        @media(max-width:640px){ nav { flex-direction:column; gap:0.8rem; } .nav-links { flex-wrap:wrap; justify-content:center; } }
-    </style>
+    
 </head>
 <body>
+<!-- Galvene ar navigāciju un lietotāja stāvokli -->
 <header>
     <nav>
         <div class="logo">Auto Detailing</div>
@@ -104,20 +41,27 @@
 </header>
 
 <main>
+    <!-- Lapas virsraksts un īss ievads -->
     <div class="hero">
         <h1>Pirms un Pēc projekti</h1>
     </div>
 
+    <!-- Darbu galerija ar kartītēm -->
+    <!-- Darbu kartīšu režģis ar pirms/pēc slaideriem -->
     <section class="grid">
         @forelse($workItems as $index => $item)
             <article class="work-card" data-slider-index="{{ $index }}">
                 @if($item->tag)
+                    <!-- Darba tips/etiķete -->
                     <span class="tag">{{ $item->tag }}</span>
                 @endif
+                <!-- Darba nosaukums -->
                 <h3 class="card-title">{{ $item->title }}</h3>
                 @if($item->description)
+                    <!-- Īss darba apraksts -->
                     <p>{{ $item->description }}</p>
                 @endif
+                <!-- Slaideris ar "pirms" un "pēc" attēliem -->
                 <div class="slider"
                      data-images='@json([
                         $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
@@ -129,10 +73,13 @@
                 </div>
             </article>
         @empty
+            <!-- Tukšs stāvoklis, ja nav neviena darba -->
             <p>Šobrīd nav pieejamu projektu. Drīzumā pievienosim!</p>
         @endforelse
     </section>
 
+    <!-- Biežāk uzdotie jautājumi -->
+    <!-- FAQ sadaļa ar atveramiem jautājumiem -->
     <section class="faq">
         <h2>Biežāk uzdotie jautājumi</h2>
         <details open>
@@ -154,6 +101,7 @@
     </section>
 </main>
 
+<!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
 <footer>
     <div class="footer-wrapper">
         <div class="footer-column">
@@ -192,21 +140,111 @@
     </div>
 </footer>
 
+<!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+<style>
+        /* Globālā nullēšana un kastes modelis */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        /* Krāsu mainīgie un palete */
+        :root {
+            --accent:#ff5c35;
+            --accent-dark:#d9461f;
+            --accent-light:#fff1ec;
+            --ink:#1a1a1a;
+            --muted:#6c6c6c;
+        }
+        /* Pamatteksts un fons */
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#fafafa; color:var(--ink); line-height:1.6; }
+        /* Galvenes izkārtojums */
+        header { background:white; border-bottom:1px solid #e8e8e8; position:sticky; top:0; z-index:100; }
+        /* Navigācijas joslas izkārtojums */
+        nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+        /* Logo stils */
+        .logo { font-size:1.3rem; font-weight:600; letter-spacing:-0.5px; }
+        /* Navigācijas saites */
+        .nav-links { display:flex; list-style:none; gap:2.5rem; }
+        .nav-links a { text-decoration:none; color:#666; font-weight:500; }
+        .nav-links a.active, .nav-links a:hover { color:var(--ink); }
+        /* Lietotāja darbību zona */
+        .nav-right { display:flex; align-items:center; gap:1.2rem; }
+        .icon-button { background:none; border:none; font-size:1.2rem; color:#666; cursor:pointer; }
+        .auth-buttons { display:flex; gap:0.9rem; }
+        .auth-buttons.signed-in { gap:0.6rem; align-items:center; }
+        /* Pogas un saites autorizācijas blokā */
+        .btn-login, .btn-signup, .btn-profile, .btn-cart, .btn-logout {
+            border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none;
+            display:inline-flex; align-items:center; justify-content:center; padding:0.45rem 1.1rem;
+        }
+        .btn-login { border:1px solid #e8e8e8; background:white; color:var(--ink); }
+        .btn-login:hover { background:#f5f5f5; }
+        .btn-signup { border:none; background:var(--ink); color:white; }
+        .btn-signup:hover { background:#333; }
+        .btn-profile { border:none; background:var(--ink); color:white; gap:0.3rem; }
+        .btn-profile:hover { background:#333; }
+        .btn-cart { border:1px solid #e8e8e8; background:white; color:var(--ink); gap:0.3rem; }
+        .btn-cart:hover { background:#f5f5f5; }
+        .btn-logout { border:none; background:#f1f1f1; color:var(--ink); gap:0.3rem; }
+        .btn-logout:hover { background:#dedede; }
+        .user-greeting { font-size:0.85rem; font-weight:600; color:var(--ink); white-space:nowrap; }
+        /* Galvenais saturs */
+        main { max-width:1400px; margin:0 auto; padding:4rem 2rem 3rem; }
+        /* Hero virsraksts */
+        .hero { text-align:center; margin-bottom:3rem; }
+        .hero h1 { font-size:2.8rem; margin-bottom:0.5rem; }
+        .hero p { color:var(--muted); max-width:700px; margin:0 auto; }
+        /* Darbu režģis */
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+        /* Darbu kartītes izskats un ēnojums */
+        .work-card { background:white; border:1px solid #f0f0f0; border-radius:20px; padding:1.5rem; box-shadow:0 15px 35px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
+        .card-title { font-size:1.2rem; }
+        /* Slider elements */
+        /* Slaidera rāmis ar fiksētu augstumu */
+        .slider { position:relative; border-radius:16px; overflow:hidden; border:1px solid #ededed; background:#f7f7f7; height:220px; display:flex; align-items:center; justify-content:center; }
+        .slider img { width:100%; height:100%; object-fit:cover; display:block; }
+        /* Slaidera navigācijas pogas */
+        .slider button { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.55); color:white; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; }
+        .slider button:hover { background:rgba(0,0,0,0.75); }
+        .slider button.prev { left:10px; }
+        .slider button.next { right:10px; }
+        .tag { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.15rem; color:#ff814f; }
+        .placeholder-note { font-size:0.85rem; color:#888; }
+        /* FAQ sadaļa */
+        .faq { margin-top:4rem; background:white; border-radius:24px; border:1px solid #e8e8e8; padding:3rem; }
+        .faq h2 { text-align:center; margin-bottom:1.5rem; font-size:2rem; }
+        details { border:1px solid #f0f0f0; border-radius:14px; padding:1rem 1.2rem; margin-bottom:1rem; background:#fff; }
+        summary { cursor:pointer; font-weight:600; }
+        summary::marker { color:var(--accent); }
+        details p { margin-top:0.6rem; color:#555; }
+        /* Kājenes stils */
+        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
+        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
+        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+        .footer-column a { text-decoration:none; color:#666; }
+        .footer-column a:hover { color:var(--ink); }
+        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
+        /* Responsivitāte mazākiem ekrāniem */
+        @media(max-width:640px){ nav { flex-direction:column; gap:0.8rem; } .nav-links { flex-wrap:wrap; justify-content:center; } }
+    </style>
 <script>
+    // Attēlu slaidera loģika katram darbu blokam.
+    // Apstrādā katru slaideri atsevišķi, lai būtu neatkarīga navigācija.
     document.querySelectorAll('.slider').forEach(slider => {
         const images = JSON.parse(slider.dataset.images);
         let current = 0;
         const img = slider.querySelector('img');
 
+        // Atjauno attēlu pēc indeksa.
         function render() {
             img.src = images[current];
         }
 
+        // Pāriet uz iepriekšējo attēlu.
         slider.querySelector('.prev').addEventListener('click', () => {
             current = (current - 1 + images.length) % images.length;
             render();
         });
 
+        // Pāriet uz nākamo attēlu.
         slider.querySelector('.next').addEventListener('click', () => {
             current = (current + 1) % images.length;
             render();
