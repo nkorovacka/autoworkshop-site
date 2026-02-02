@@ -98,7 +98,8 @@
                             </div>
                             <div class="form-field">
                                 <label for="phone">Telefona numurs *</label>
-                                <input type="tel" id="phone" name="customer_phone" value="{{ old('customer_phone') }}" required>
+                                <input type="tel" id="phone" name="customer_phone" value="{{ old('customer_phone') }}" required inputmode="tel" maxlength="14" pattern="^\+?\d{1,13}$" placeholder="+37120000000">
+                                <small id="phoneError" class="field-error" style="display:none;"></small>
                             </div>
                         </div>
                         <div class="form-field">
@@ -809,6 +810,13 @@
             border: 1px solid #f5c6cb;
         }
 
+        .field-error {
+            color: #b5302c;
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            display: block;
+        }
+
         /* Responsivitāte planšetēm un telefoniem */
         @media (max-width: 968px) {
             .booking-layout {
@@ -820,7 +828,21 @@
             }
 
             .nav-links {
-                display: none;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
             }
         }
 
@@ -912,6 +934,8 @@
         const totalField = document.getElementById('totalField');
         const carHiddenInput = document.getElementById('car');
         const carDisplayInput = document.getElementById('carDisplay');
+        const phoneInput = document.getElementById('phone');
+        const phoneError = document.getElementById('phoneError');
         // Datu saraksts ar auto modeļiem un cenu koeficientiem no <datalist>.
         const carSuggestionData = Array.from(document.querySelectorAll('#carSuggestions option')).map(option => {
             const label = (option.value || '').trim();
@@ -971,6 +995,40 @@
         const minBookingDate = @json($isOfferSchedule ? null : $minDate);
         // Jau aizņemtie laiki pa datumiem (tikai parastajiem booking).
         const generalBookedSlots = @json($generalBookedSlots);
+
+        // Telefona numura pamata validācija (max 13 cipari, optional + sākumā).
+        function validatePhoneField(shouldNotify) {
+            if (!phoneInput) {
+                return true;
+            }
+
+            const rawValue = phoneInput.value.trim();
+            const digitsOnly = rawValue.replace(/\D/g, '');
+            let message = '';
+
+            if (rawValue.length > 0 && !/^\+?\d*$/.test(rawValue)) {
+                message = 'Atļauti tikai cipari un + sākumā.';
+            } else if (digitsOnly.length > 13) {
+                message = 'Telefona numurs ir par garu (maks. 13 cipari).';
+            }
+
+            if (digitsOnly.length > 13 && rawValue.length > 0) {
+                const trimmedDigits = digitsOnly.slice(0, 13);
+                phoneInput.value = (rawValue.startsWith('+') ? '+' : '') + trimmedDigits;
+            }
+
+            phoneInput.setCustomValidity(message);
+            if (phoneError) {
+                phoneError.textContent = message;
+                phoneError.style.display = message ? 'block' : 'none';
+            }
+
+            if (shouldNotify && message) {
+                showMessage(message, 'error');
+            }
+
+            return message === '';
+        }
 
         // Izvelk atzīmēto pakalpojumu slugus.
         function getSelectedServiceSlugs() {
@@ -1378,6 +1436,11 @@
         if (timeField) {
             timeField.addEventListener('change', updateSummary);
         }
+        // Telefona laukam uzreiz rāda, ja ievade ir pārāk gara vai nederīga.
+        if (phoneInput) {
+            phoneInput.addEventListener('input', () => validatePhoneField(false));
+            phoneInput.addEventListener('blur', () => validatePhoneField(false));
+        }
 
         // Formas iesniegšanas validācija pirms nosūtīšanas.
         if (bookingForm) {
@@ -1422,6 +1485,12 @@
                 // Auto/salona dati jābūt aizpildītiem pēc izvēlēm.
                 if (isValid && !hasAllRequiredVehicleDetails()) {
                     showMessage('Lūdzu aizpildi auto informāciju (un salona sadaļu, ja izvēlies atbilstošus pakalpojumus)', 'error');
+                    isValid = false;
+                }
+
+                // Telefona numuram jābūt līdz 13 cipariem (+ ir izvēles).
+                if (isValid && !validatePhoneField(true)) {
+                    phoneInput.focus();
                     isValid = false;
                 }
 

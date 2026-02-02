@@ -98,7 +98,16 @@ class BookingController extends Controller
         // Bāzes validācija (obligātie lauki, formāti, vērtību ierobežojumi).
         $data = $request->validate([
             'customer_name'   => 'required|string|max:255',
-            'customer_phone'  => 'required|string|max:50',
+            'customer_phone'  => [
+                'required',
+                'regex:/^\+?\d+$/',
+                function ($attribute, $value, $fail) {
+                    $digits = preg_replace('/\D/', '', (string) $value);
+                    if (strlen($digits) > 13) {
+                        $fail('Telefona numurs ir par garu (maks. 13 cipari).');
+                    }
+                },
+            ],
             'customer_email'  => 'nullable|email|max:255',
 
             'car'                => 'required|string',
@@ -112,6 +121,7 @@ class BookingController extends Controller
             'offer_id'           => 'nullable|exists:offers,id',
         ], [
             'services.required' => 'Lūdzu izvēlies vismaz vienu pakalpojumu.',
+            'customer_phone.regex' => 'Telefona numurs ir par garu vai neatbilstošā formātā (maks. 13 cipari un izvēles +).',
         ]);
 
         // Piedāvājuma objekts, ja rezervācija ir sasaistīta ar akciju.

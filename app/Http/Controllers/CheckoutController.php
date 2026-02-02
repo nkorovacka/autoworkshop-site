@@ -56,7 +56,16 @@ class CheckoutController extends Controller
         // Validē pasūtījuma datus, ieskaitot kartes laukus un piegādes metodi.
         $data = $request->validate([
             'customer_name' => 'nullable|string|max:255',
-            'customer_phone' => 'nullable|string|max:50',
+            'customer_phone' => [
+                'required',
+                'regex:/^\+?\d+$/',
+                function ($attribute, $value, $fail) {
+                    $digits = preg_replace('/\D/', '', (string) $value);
+                    if (strlen($digits) > 13) {
+                        $fail('Telefona numurs ir par garu (maks. 13 cipari).');
+                    }
+                },
+            ],
             'card_holder' => ['required','max:255','regex:/^[\pL\s\'\-]+$/u'],
             'card_number' => 'required|digits_between:13,19',
             'card_expiry' => ['required', 'regex:/^(0[1-9]|1[0-2])\\/([0-9]{2})$/'],
@@ -64,6 +73,8 @@ class CheckoutController extends Controller
             'shipping_method' => 'required|in:pickup,delivery',
             'shipping_address' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
+        ], [
+            'customer_phone.regex' => 'Telefona numurs ir par garu vai neatbilstošā formātā (maks. 13 cipari un izvēles +).',
         ]);
 
         // Pārbauda, vai kartes derīgums ir vismaz nākamajā mēnesī.

@@ -748,7 +748,21 @@
         /* Responsivitāte planšetēm un telefoniem */
         @media (max-width: 968px) {
             .nav-links {
-                display: none;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
             }
 
             .offers-grid {

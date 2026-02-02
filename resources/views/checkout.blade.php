@@ -48,7 +48,7 @@
         <!-- Maksājuma forma -->
         <section class="card">
             <h2>Maksājuma informācija</h2>
-            <form method="POST" action="{{ route('checkout.store') }}">
+            <form id="checkoutForm" method="POST" action="{{ route('checkout.store') }}">
                 @csrf
                 <div class="form-group">
                     <label for="customer_name">Vārds un Uzvārds</label>
@@ -56,7 +56,8 @@
                 </div>
                 <div class="form-group">
                     <label for="customer_phone">Telefons</label>
-                    <input type="text" id="customer_phone" name="customer_phone" value="{{ old('customer_phone') }}" placeholder="+371 20000000" required>
+                    <input type="tel" id="customer_phone" name="customer_phone" value="{{ old('customer_phone') }}" placeholder="+37120000000" required inputmode="tel" maxlength="14" pattern="^\+?\d{1,13}$">
+                    <small id="checkoutPhoneError" class="field-error" style="display:none;"></small>
                 </div>
                 <!-- Kartes dati -->
                 <div class="form-group">
@@ -208,6 +209,7 @@
     .lead { color:var(--muted); margin-bottom:1.5rem; }
     .flash { padding:0.9rem 1.1rem; border-radius:12px; margin-bottom:1.5rem; font-weight:500; }
     .flash-error { background:#fdecea; border:1px solid #f3c0b7; color:#b5302c; }
+    .field-error { color:#b5302c; font-size:0.85rem; margin-top:0.35rem; display:block; }
     /* Checkout izkārtojums */
     .checkout-grid { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; align-items:start; }
     .card { background:white; border:1px solid var(--border); border-radius:18px; padding:1.5rem; }
@@ -247,6 +249,9 @@
     // Piegādes veida radio pogas un adreses lauks.
     const shippingRadios = document.querySelectorAll('input[name=\"shipping_method\"]');
     const shippingGroup = document.getElementById('shippingAddressGroup');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const phoneInput = document.getElementById('customer_phone');
+    const phoneError = document.getElementById('checkoutPhoneError');
 
     // Parāda vai paslēpj adreses lauku pēc izvēlētā piegādes veida.
     function toggleAddress() {
@@ -262,6 +267,50 @@
     shippingRadios.forEach(radio => radio.addEventListener('change', toggleAddress));
     // Inicializācija pēc lapas ielādes.
     document.addEventListener('DOMContentLoaded', toggleAddress);
+
+    // Telefona numura pamata validācija (max 13 cipari, optional + sākumā).
+    function validatePhone() {
+        if (!phoneInput) {
+            return true;
+        }
+
+        const rawValue = phoneInput.value.trim();
+        const digitsOnly = rawValue.replace(/\D/g, '');
+        let message = '';
+
+        if (rawValue.length > 0 && !/^\+?\d*$/.test(rawValue)) {
+            message = 'Atļauti tikai cipari un + sākumā.';
+        } else if (digitsOnly.length > 13) {
+            message = 'Telefona numurs ir par garu (maks. 13 cipari).';
+        }
+
+        if (digitsOnly.length > 13 && rawValue.length > 0) {
+            const trimmedDigits = digitsOnly.slice(0, 13);
+            phoneInput.value = (rawValue.startsWith('+') ? '+' : '') + trimmedDigits;
+        }
+
+        phoneInput.setCustomValidity(message);
+        if (phoneError) {
+            phoneError.textContent = message;
+            phoneError.style.display = message ? 'block' : 'none';
+        }
+
+        return message === '';
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', () => validatePhone());
+        phoneInput.addEventListener('blur', () => validatePhone());
+    }
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', (event) => {
+            if (!validatePhone()) {
+                event.preventDefault();
+                phoneInput.focus();
+            }
+        });
+    }
 </script>
 </body>
 </html>

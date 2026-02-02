@@ -37,6 +37,7 @@
         .status-pill.cancelled { background:#fdecea; color:#b5302c; }
         .cancel-button { border:none; background:none; color:#c0392b; font-weight:600; cursor:pointer; font-size:0.9rem; }
         .cancel-button:hover { text-decoration:underline; }
+        .cancel-note { color:#9a3412; font-weight:600; font-size:0.9rem; }
         .flash { padding:0.9rem 1rem; border-radius:12px; font-weight:600; }
         .flash-success { background:#e6f5ef; color:#136b3a; border:1px solid #b7e2c9; }
         .flash-error { background:#fdecea; color:#b5302c; border:1px solid #f3c0b7; }
@@ -91,9 +92,23 @@
         @else
             <div class="items-list">
                 @foreach($webinarRegistrations as $registration)
+                    @php
+                        $eventDate = $registration->offer && $registration->offer->event_date
+                            ? \Carbon\Carbon::parse($registration->offer->event_date)->startOfDay()
+                            : null;
+                        $isTooLateToCancel = $eventDate && now()->startOfDay()->greaterThanOrEqualTo($eventDate);
+                    @endphp
                     <div class="item-card">
                         <div>
-                            <div class="item-title">{{ $registration->offer->title ?? 'Vebinārs' }}</div>
+                            <div class="item-title">
+                                @if($registration->offer && $registration->offer->title)
+                                    Vebinārs: {{ $registration->offer->title }}
+                                @elseif($registration->offer)
+                                    Vebinārs (bez nosaukuma)
+                                @else
+                                    Vebinārs (piedāvājums nav atrasts)
+                                @endif
+                            </div>
                             <div class="item-meta">
                                 @if($registration->offer && $registration->offer->event_date)
                                     <span>📅 {{ \Carbon\Carbon::parse($registration->offer->event_date)->locale('lv')->translatedFormat('d. F H:i') }}</span>
@@ -103,13 +118,17 @@
                         </div>
                         <div class="item-actions">
                             <span class="status-pill">Pieteikts</span>
-                            <form method="POST"
-                                  action="{{ route('profile.webinars.cancel', $registration) }}"
-                                  onsubmit="return confirm('Vai tiešām atcelt šo vebināru?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="cancel-button">Atcelt</button>
-                            </form>
+                            @if($isTooLateToCancel)
+                                <span class="cancel-note">Atcelšana nav pieejama vebināra dienā.</span>
+                            @else
+                                <form method="POST"
+                                      action="{{ route('profile.webinars.cancel', $registration) }}"
+                                      onsubmit="return confirm('Vai tiešām atcelt šo vebināru?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="cancel-button">Atcelt</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach

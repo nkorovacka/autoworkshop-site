@@ -190,7 +190,9 @@
 
         /* Responsivitāte planšetēm un telefoniem */
         @media (max-width:768px) {
-            .nav-links, .nav-right { display:none; }
+            nav { flex-direction: column; gap: 0.8rem; }
+            .nav-links { display:flex; flex-wrap:wrap; justify-content:center; gap:1rem; }
+            .nav-right { display:flex; width:100%; justify-content:center; flex-wrap:wrap; }
             .intro { padding:3rem 1.5rem 2rem; }
             .services-grid, .packages { padding:0 1.5rem 2.5rem; }
             .cta { padding:3rem 1.5rem; }

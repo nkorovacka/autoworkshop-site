@@ -16,12 +16,23 @@ class OrderController extends Controller
         // Validē klienta un piegādes datus, kā arī pasūtīto daudzumu.
         $data = $request->validate([
             'customer_name'   => 'required|string|max:255',
-            'customer_phone'  => 'required|string|max:50',
+            'customer_phone'  => [
+                'required',
+                'regex:/^\+?\d+$/',
+                function ($attribute, $value, $fail) {
+                    $digits = preg_replace('/\D/', '', (string) $value);
+                    if (strlen($digits) > 13) {
+                        $fail('Telefona numurs ir par garu (maks. 13 cipari).');
+                    }
+                },
+            ],
             'customer_email'  => 'nullable|email|max:255',
             'quantity'        => 'required|integer|min:1',
 
             'delivery_method'  => 'required|in:pickup,delivery',
             'delivery_address' => 'nullable|string|max:255',
+        ], [
+            'customer_phone.regex' => 'Telefona numurs ir par garu vai neatbilstošā formātā (maks. 13 cipari un izvēles +).',
         ]);
 
         // Ja izvēlēta piegāde, adrese ir obligāta.

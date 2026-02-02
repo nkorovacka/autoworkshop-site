@@ -7,6 +7,7 @@ use App\Models\OfferRegistration;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 class ProfileController extends Controller
 {
@@ -55,6 +56,16 @@ class ProfileController extends Controller
     {
         // Pārbauda, vai pieteikums pieder lietotājam.
         $this->ensureOwnership($registration);
+
+        // Vebināru var atcelt tikai līdz dienai pirms notikuma.
+        if ($registration->offer && $registration->offer->event_date) {
+            $eventDate = Carbon::parse($registration->offer->event_date)->startOfDay();
+            $today = now()->startOfDay();
+
+            if ($today->greaterThanOrEqualTo($eventDate)) {
+                return back()->with('error', 'Vebināru tajā pašā dienā atcelt nevar.');
+            }
+        }
 
         // Samazina reģistrāciju skaitu, ja tas ir iespējams.
         if ($registration->offer && $registration->offer->registrations_count > 0) {

@@ -43,7 +43,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->group(function () {
         // Admin sākumlapa un kopsavilkums
         Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'bookings'])->name('admin.dashboard');
-        Route::get('/admin/overview', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.overview');
         // Pakalpojumu pieteikumu pārvaldība
         Route::get('/admin/bookings', [\App\Http\Controllers\AdminController::class, 'bookings'])->name('admin.bookings');
         Route::patch('/admin/bookings/{booking}', [\App\Http\Controllers\AdminController::class, 'updateBookingStatus'])->name('admin.bookings.update');
@@ -70,6 +69,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/work-items', [\App\Http\Controllers\AdminController::class, 'storeWorkItem'])->name('admin.work-items.store');
         Route::patch('/admin/work-items/{workItem}', [\App\Http\Controllers\AdminController::class, 'updateWorkItem'])->name('admin.work-items.update');
         Route::delete('/admin/work-items/{workItem}', [\App\Http\Controllers\AdminController::class, 'destroyWorkItem'])->name('admin.work-items.destroy');
+
+        // Lietotāju pārvaldība admin panelī
+        Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('admin.users');
+        Route::patch('/admin/users/{user}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.users.update');
+        Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminController::class, 'destroyUser'])->name('admin.users.destroy');
     });
 });
 

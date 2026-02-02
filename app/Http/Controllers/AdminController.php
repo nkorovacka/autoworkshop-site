@@ -7,32 +7,17 @@ use App\Models\Order;
 use App\Models\Offer;
 use App\Models\OfferRegistration;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as ValidationPassword;
 
 class AdminController extends Controller
 {
-    /**
-     * Admin paneļa sākumlapa ar kopsavilkuma statistiku un pēdējiem ierakstiem.
-     */
-    public function index()
-    {
-        // Apkopo galvenos skaitļus informācijas panelim.
-        $stats = [
-            'bookings' => Booking::count(),
-            'orders' => Order::count(),
-            'webinar_registrations' => OfferRegistration::count(),
-        ];
-
-        // Ielādē pēdējos pieteikumus un pasūtījumus ātrai pārskatīšanai.
-        $latestBookings = Booking::latest()->take(5)->get();
-        $latestOrders = Order::latest()->take(5)->get();
-
-        return view('admin.dashboard', compact('stats', 'latestBookings', 'latestOrders'));
-    }
-
     /**
      * Parāda pieteikumu sarakstu ar lapošanu.
      */
@@ -73,6 +58,75 @@ class AdminController extends Controller
         $orders = Order::with(['items.product'])->latest()->paginate(15);
 
         return view('admin.products', compact('products', 'orders'));
+    }
+
+    /**
+     * Parāda lietotāju sarakstu ar iespēju rediģēt un dzēst.
+     */
+    public function users()
+    {
+        // Ielādē lietotājus ar lapošanu ērtākai pārskatīšanai.
+        $users = User::orderByDesc('created_at')->paginate(15);
+
+        return view('admin.users', compact('users'));
+    }
+
+    /**
+     * Atjaunina lietotāja datus un pēc izvēles nomaina paroli.
+     */
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        // Validē pamatlaukus, kā arī unikālu e-pastu un paroles sarežģītību.
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'is_admin' => ['required', 'boolean'],
+            'password' => [
+                'nullable',
+                'confirmed',
+                ValidationPassword::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
+        ]);
+
+        // Sagatavo atjaunināmo datu masīvu bez paroles, ja tā nav ievadīta.
+        $payload = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'is_admin' => $data['is_admin'],
+        ];
+
+        if (!empty($data['password'])) {
+            $payload['password'] = Hash::make($data['password']);
+        }
+
+        // Saglabā izmaiņas datubāzē.
+        $user->update($payload);
+
+        return back()->with('success', 'Lietotāja dati atjaunināti.');
+    }
+
+    /**
+     * Dzēš lietotāju, aizliedzot dzēst pašam sevi vai pēdējo adminu.
+     */
+    public function destroyUser(User $user): RedirectResponse
+    {
+        // Neļauj dzēst pašreizējo adminu.
+        if (auth()->id() === $user->id) {
+            return back()->withErrors(['delete' => 'Nevar dzēst pašreiz pieslēgto adminu.']);
+        }
+
+        // Aizsardzība: nedzēš pēdējo adminu sistēmā.
+        if ($user->is_admin && User::where('is_admin', true)->count() <= 1) {
+            return back()->withErrors(['delete' => 'Nevar dzēst pēdējo adminu sistēmā.']);
+        }
+
+        $user->delete();
+
+        return back()->with('success', 'Lietotājs dzēsts.');
     }
 
     /**
