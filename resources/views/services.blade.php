@@ -1,44 +1,8 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pakalpojumi - Auto Detailing Workshop</title>
-    
-</head>
-<body>
-<!-- Galvene ar navigāciju un lietotāja stāvokli -->
-<header>
-    <nav>
-        <div class="logo">Auto Detailing</div>
-        <ul class="nav-links">
-            <li><a href="{{ route('home') }}">Galvenā</a></li>
-            <li><a href="{{ route('services.index') }}" class="active">Pakalpojumi</a></li>
-            <li><a href="{{ route('products.index') }}">Produkti</a></li>
-            <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-            <li><a href="{{ route('our-work') }}">Darbi</a></li>
-        </ul>
-        <div class="nav-right">
-            @auth
-                <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                    <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit" class="btn-logout">Iziet</button>
-                    </form>
-                </div>
-            @else
-                <button class="icon-button" title="Profils">👤</button>
-                <div class="auth-buttons">
-                    <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                    <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                </div>
-            @endauth
-        </div>
-    </nav>
-</header>
+@extends('layouts.public')
+
+@section('title', 'Pakalpojumi - Auto Detailing Workshop')
+
+@section('content')
 
 <!-- Lapas ievads ar virsrakstu un aprakstu -->
 <section class="intro">
@@ -48,10 +12,22 @@
 
 <!-- Pakalpojumu kartīšu režģis -->
 <section class="services-grid">
+    @php
+        $serviceIcons = [
+            'salona-dzila-tirisana' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6c0-2.2 1.8-4 4-4s4 1.8 4 4v3h2a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-5a3 3 0 0 1 3-3h2V6zm2 3h4V6a2 2 0 1 0-4 0v3z"/></svg>',
+            'virsbuvess-pulessana' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3zm6.5.5-1.4 1.4 2 2 1.4-1.4-2-2zM12 7a5 5 0 1 0 5 5h-2a3 3 0 1 1-3-3V7z"/></svg>',
+            'keramiska-apstrade' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3.3 0 6 2.7 6 6 0 4.3-4.4 9.3-6 12-1.6-2.7-6-7.7-6-12 0-3.3 2.7-6 6-6zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z"/></svg>',
+            'salona-dezinfekcija' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c2 3 6 6.1 6 10a6 6 0 1 1-12 0c0-3.9 4-7 6-10zm-1 6.5-1.5 2.7a2.5 2.5 0 0 0 5 0L13 8.5a1.2 1.2 0 0 0-2 0z"/></svg>',
+            'pilns-detailing-komplekts' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a3 3 0 0 1 3-3h6l2 2h2a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V7zm5.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
+            'vip-programma' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 9.6 7.2 4 8l4 4-1 5.9 5-2.7 5 2.7-1-5.9 4-4-5.6-.8L12 2z"/></svg>',
+        ];
+    @endphp
     @foreach($services as $service)
         <!-- Viena pakalpojuma kartīte -->
         <article class="service-card">
-            <div class="icon" style="font-size:1.8rem;">{{ $service->icon }}</div>
+            <div class="icon" aria-hidden="true">
+                {!! $serviceIcons[$service->slug] ?? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3z"/><path d="M12 8a4 4 0 1 0 4 4h-2a2 2 0 1 1-2-2V8z"/></svg>' !!}
+            </div>
             <h2>{{ $service->name }}</h2>
             <small>No €{{ number_format($service->base_price, 0) }}</small>
             <p>{{ $service->description }}</p>
@@ -80,46 +56,8 @@
     <a href="{{ route('booking.create') }}">Rezervēt tiešsaistē</a>
 </section>
 
-<!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
-<footer>
-    <div class="footer-wrapper">
-        <div class="footer-column">
-            <h4>Salons</h4>
-            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-        </div>
-        <div class="footer-column">
-            <h4>Kontakti</h4>
-            <ul>
-                <li>📞 +371 2000 0000</li>
-                <li>✉️ info@detailing.lv</li>
-                <li>WhatsApp & Telegram</li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Ātrās saites</h4>
-            <ul>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Sekojiet mums</h4>
-            <ul>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-    </div>
-    </footer>
-
 <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+@push('styles')
 <style>
         /* Globālā nullēšana un kastes modelis */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -134,30 +72,6 @@
         /* Pamatteksts un fons */
         body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#fafafa; color:var(--ink); line-height:1.6; }
 
-        /* Galvene un navigācija */
-        header { background:white; border-bottom:1px solid #e8e8e8; position:sticky; top:0; z-index:100; }
-        nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-        .logo { font-size:1.3rem; font-weight:600; letter-spacing:-0.5px; }
-        .nav-links { display:flex; list-style:none; gap:2.5rem; }
-        .nav-links a { text-decoration:none; color:#666; font-size:0.95rem; font-weight:500; transition:color 0.2s; }
-        .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-        .nav-right { display:flex; align-items:center; gap:1.5rem; }
-        .icon-button { background:none; border:none; font-size:1.2rem; color:#666; cursor:pointer; }
-        .auth-buttons { display:flex; gap:0.9rem; }
-        .auth-buttons.signed-in { gap:0.6rem; align-items:center; }
-        .btn-login, .btn-signup { padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
-        .btn-login { border:1px solid #e8e8e8; background:none; }
-        .btn-login:hover { background:#f5f5f5; }
-        .btn-signup { background:var(--ink); color:white; border:none; }
-        .btn-profile { border:none; background:var(--ink); color:white; padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
-        .btn-profile:hover { background:#333; }
-        .btn-cart { border:1px solid #e8e8e8; background:white; color:var(--ink); text-decoration:none; padding:0.45rem 1.1rem; border-radius:8px; font-size:0.9rem; font-weight:500; display:inline-flex; align-items:center; gap:0.4rem; }
-        .btn-cart:hover { background:#f5f5f5; }
-        .user-greeting { font-size:0.9rem; font-weight:600; color:var(--ink); white-space:nowrap; }
-        .logout-form { margin:0; }
-        .btn-logout { padding:0.45rem 1rem; border-radius:8px; font-size:0.9rem; font-weight:500; border:none; background:#f1f1f1; color:var(--ink); cursor:pointer; transition:background 0.2s; }
-        .btn-logout:hover { background:#dfdfdf; }
-
         /* Ievada sadaļa */
         .intro { max-width:1400px; margin:0 auto; padding:4rem 2rem 2.5rem; }
         .intro h1 { font-size:2.8rem; margin-bottom:0.8rem; }
@@ -166,6 +80,8 @@
         /* Pakalpojumu režģis un kartītes */
         .services-grid { max-width:1400px; margin:0 auto; padding:0 2rem 3rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
         .service-card { background:white; border:1px solid #f0f0f0; border-radius:18px; padding:2rem; display:flex; flex-direction:column; gap:0.8rem; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .service-card .icon { width:48px; height:48px; display:grid; place-items:center; border-radius:12px; background:#f5f6f8; color:var(--accent); }
+        .service-card .icon svg { width:26px; height:26px; fill:currentColor; }
         .service-card h2 { font-size:1.4rem; }
         .service-card small { color:var(--muted); font-weight:500; }
         .service-card ul { list-style:none; color:var(--muted); padding-left:0; }
@@ -179,24 +95,12 @@
         .cta p { opacity:0.9; margin-top:0.5rem; }
         .cta a { display:inline-block; margin-top:1.2rem; padding:0.9rem 1.8rem; border-radius:12px; background:white; color:var(--ink); text-decoration:none; font-weight:600; }
 
-        /* Kājenes izkārtojums */
-        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
-        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
-        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
-        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-        .footer-column a { text-decoration:none; color:#666; }
-        .footer-column a:hover { color:var(--ink); }
-        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
-
         /* Responsivitāte planšetēm un telefoniem */
         @media (max-width:768px) {
-            nav { flex-direction: column; gap: 0.8rem; }
-            .nav-links { display:flex; flex-wrap:wrap; justify-content:center; gap:1rem; }
-            .nav-right { display:flex; width:100%; justify-content:center; flex-wrap:wrap; }
             .intro { padding:3rem 1.5rem 2rem; }
             .services-grid, .packages { padding:0 1.5rem 2.5rem; }
             .cta { padding:3rem 1.5rem; }
         }
     </style>
-</body>
-</html>
+@endpush
+@endsection

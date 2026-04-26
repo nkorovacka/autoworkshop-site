@@ -23,8 +23,13 @@
         <div class="nav-right">
             <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
             <div class="auth-buttons">
-                <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
+                <a class="btn-cart" href="{{ route('cart.index') }}">Grozs</a>
+                <a class="btn-profile" href="{{ route('profile') }}">
+                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0"/>
+                    </svg>
+                    Profils
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="btn-logout">Iziet</button>
@@ -109,11 +114,15 @@
         <!-- Kopsavilkums ar precēm un summu -->
         <aside class="card">
             <h2>Kopsavilkums</h2>
+            <div class="item-list">
+                @foreach($items as $item)
+                    <!-- Viena prece kopsavilkumā -->
+                    <div class="item-row">
+                        <span>{{ $item->product->name }} × {{ $item->quantity }}</span>
+                    </div>
+                @endforeach
+            </div>
             <div class="summary-section">
-                <div class="summary-item">
-                    <span>Produkti</span>
-                    <span>{{ number_format($subtotal, 2) }} €</span>
-                </div>
                 <div class="summary-item">
                     <span>Piegāde</span>
                     <span>Tiks precizēta</span>
@@ -123,57 +132,11 @@
                     <span>{{ number_format($subtotal, 2) }} €</span>
                 </div>
             </div>
-            <div class="item-list">
-                @foreach($items as $item)
-                    <!-- Viena prece kopsavilkumā -->
-                    <div class="item-row">
-                        <span>{{ $item->product->name }} × {{ $item->quantity }}</span>
-                        <span>{{ number_format($item->unit_price * $item->quantity, 2) }} €</span>
-                    </div>
-                @endforeach
-            </div>
         </aside>
     </div>
 </main>
 
-<!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
-<footer>
-    <div class="footer-wrapper">
-        <div class="footer-column">
-            <h4>Salons</h4>
-            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-        </div>
-        <div class="footer-column">
-            <h4>Kontakti</h4>
-            <ul>
-                <li>📞 +371 2000 0000</li>
-                <li>✉️ info@detailing.lv</li>
-                <li>WhatsApp & Telegram</li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Ātrās saites</h4>
-            <ul>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Sekojiet mums</h4>
-            <ul>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-    </div>
-</footer>
+@include('partials.public-footer')
 
 <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
 <style>
@@ -200,6 +163,7 @@
     .nav-right { display:flex; align-items:center; gap:1.2rem; }
     .auth-buttons { display:flex; gap:0.6rem; }
     .btn-cart, .btn-profile, .btn-logout { padding:0.45rem 1.1rem; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:500; }
+    .btn-icon { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
     .btn-cart { border:1px solid var(--border); background:white; color:var(--ink); }
     .btn-profile { border:none; background:var(--ink); color:white; }
     .btn-logout { border:none; background:#f1f1f1; color:var(--ink); cursor:pointer; }
@@ -226,12 +190,12 @@
     .summary-section { display:flex; flex-direction:column; gap:0.9rem; }
     .summary-item { display:flex; justify-content:space-between; }
     .summary-total { font-size:1.3rem; font-weight:700; }
-    .item-list { border-top:1px solid #f0f0f0; padding-top:1rem; margin-top:1rem; }
+    .item-list { border-bottom:1px solid #f0f0f0; padding-bottom:1rem; margin-bottom:1rem; }
     .item-row { display:flex; justify-content:space-between; margin-bottom:0.6rem; font-size:0.95rem; }
     .shipping-address { display:none; }
     .shipping-address.visible { display:block; }
     /* Kājenes noformējums */
-    footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
+    footer { background:#fff7f2; border-top:1px solid #f4ddd2; margin-top:4rem; }
     .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
     .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
     .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }

@@ -27,6 +27,7 @@ class ProfileController extends Controller
 
         // Pakalpojumu rezervācijas.
         $serviceBookings = $user->bookings()
+            ->with('services')
             ->latest()
             ->get();
 
@@ -86,6 +87,21 @@ class ProfileController extends Controller
         // Pārbauda, vai rezervācija pieder lietotājam.
         $this->ensureOwnership($booking);
 
+        // Lietotājs var atcelt tikai rezervāciju, kas vēl ir procesā.
+        if (($booking->status ?? 'pending') !== 'pending') {
+            return back()->with('error', 'Rezervāciju var atcelt tikai tad, kamēr tās statuss ir "Procesā".');
+        }
+
+        // Rezervāciju nevar atcelt tajā pašā dienā.
+        if ($booking->date) {
+            $bookingDate = Carbon::parse($booking->date)->startOfDay();
+            $today = now()->startOfDay();
+
+            if ($today->greaterThanOrEqualTo($bookingDate)) {
+                return back()->with('error', 'Rezervāciju tajā pašā dienā atcelt nevar.');
+            }
+        }
+
         // Dzēš rezervāciju.
         $booking->delete();
 
@@ -103,6 +119,10 @@ class ProfileController extends Controller
         // Ja pasūtījums jau ir atcelts, neko nemaina.
         if ($order->status === 'cancelled') {
             return back()->with('error', 'Pasūtījums jau ir atcelts.');
+        }
+        // Ja pasūtījums jau ir izsūtīts, to nevar atcelt.
+        if (in_array($order->status, ['completed', 'shipped'], true)) {
+            return back()->with('error', 'Pasūtījumu vairs nevar atcelt, jo tas jau ir izsūtīts.');
         }
 
         // Ielādē pasūtījuma preces un palielina krājumu.

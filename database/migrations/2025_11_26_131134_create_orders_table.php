@@ -24,8 +24,8 @@ return new class extends Migration
             $table->decimal('total_price', 8, 2);
 
             // Piegādes info UZREIZ šeit
-            $table->string('delivery_method')->default('pickup'); // pickup / delivery
-            $table->string('delivery_address')->nullable();       // adrese / pakomāts, ja delivery
+            $table->string('shipping_method')->default('pickup');
+            $table->string('shipping_address')->nullable();
 
             $table->string('status')->default('new'); // new / confirmed / done
 

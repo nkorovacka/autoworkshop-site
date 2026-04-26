@@ -24,7 +24,7 @@ class AdminController extends Controller
     public function bookings()
     {
         // Pēdējie pieteikumi, sadalīti lapās.
-        $bookings = Booking::latest()->paginate(15);
+        $bookings = Booking::with('services')->latest()->paginate(15);
 
         return view('admin.bookings', compact('bookings'));
     }
@@ -90,6 +90,17 @@ class AdminController extends Controller
                     ->numbers()
                     ->symbols(),
             ],
+        ], [
+            'name.required' => 'Lūdzu ievadi lietotāja vārdu.',
+            'email.required' => 'Lūdzu ievadi e-pasta adresi.',
+            'email.email' => 'Lūdzu ievadi derīgu e-pasta adresi.',
+            'email.unique' => 'Šī e-pasta adrese jau tiek izmantota.',
+            'password.confirmed' => 'Paroles apstiprinājums nesakrīt.',
+            'password.min' => 'Parolei jābūt vismaz :min simbolus garai.',
+            'password.letters' => 'Parolei jāsatur vismaz viens burts.',
+            'password.mixed' => 'Parolei jāsatur vismaz viens mazais un viens lielais burts.',
+            'password.numbers' => 'Parolei jāsatur vismaz viens cipars.',
+            'password.symbols' => 'Parolei jāsatur vismaz viens speciālais simbols.',
         ]);
 
         // Sagatavo atjaunināmo datu masīvu bez paroles, ja tā nav ievadīta.

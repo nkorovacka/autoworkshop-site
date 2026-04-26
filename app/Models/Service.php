@@ -27,4 +27,12 @@ class Service extends Model
     {
         return Str::slug($this->name);
     }
+
+    /**
+     * Rezervācijas, kurās izvēlēts šis pakalpojums.
+     */
+    public function bookings()
+    {
+        return $this->belongsToMany(Booking::class);
+    }
 }

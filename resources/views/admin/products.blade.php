@@ -146,23 +146,24 @@
                     <td>{{ $order->customer_name ?? optional($order->user)->name ?? 'Klients' }}</td>
                     <td>{{ number_format($order->total_price, 2) }} € ({{ $order->total_items }} gab.)</td>
                     <td>{{ $order->created_at }}</td>
-                    @php $orderStatus = $order->status ?? 'pending'; @endphp
+                    @php
+                        $orderStatus = $order->status ?? 'pending';
+                        $orderStatusLabels = [
+                            'pending' => 'Jauns',
+                            'processing' => 'Procesā',
+                            'completed' => 'Pabeigts',
+                            'cancelled' => 'Atcelts',
+                        ];
+                    @endphp
                     <!-- Statusa nozīmīte ar krāsojumu -->
-                    <td><span class="status-pill {{ $orderStatus }}">{{ ucfirst($orderStatus) }}</span></td>
+                    <td><span class="status-pill {{ $orderStatus }}">{{ $orderStatusLabels[$orderStatus] ?? $orderStatus }}</span></td>
                     <td>
                         <div class="order-actions">
-                            <!-- Statusa maiņas pogas -->
-                            <form method="POST" action="{{ route('admin.orders.update', $order) }}">
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="status" value="processing">
-                                <button class="btn-secondary" type="submit">Apstrādē</button>
-                            </form>
                             <form method="POST" action="{{ route('admin.orders.update', $order) }}">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="status" value="completed">
-                                <button class="btn-primary" type="submit">Pabeigts</button>
+                                <button class="btn-primary" type="submit">Pabeigt</button>
                             </form>
                             <form method="POST" action="{{ route('admin.orders.update', $order) }}">
                                 @csrf
@@ -170,6 +171,14 @@
                                 <input type="hidden" name="status" value="cancelled">
                                 <button class="btn-danger" type="submit">Atcelt</button>
                             </form>
+                            @if($orderStatus !== 'pending')
+                                <form method="POST" action="{{ route('admin.orders.update', $order) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="pending">
+                                    <button class="btn-reset" type="submit">Atjaunot</button>
+                                </form>
+                            @endif
                         </div>
                         <!-- Pasūtījuma preču saraksts -->
                         @if($order->items->count())
@@ -222,6 +231,7 @@
     .btn-primary { background:#111827; color:white; }
     .btn-secondary { background:#e5e7eb; color:#111827; }
     .btn-danger { background:#ef4444; color:white; }
+    .btn-reset { background:#fff7ed; color:#c2410c; }
 
     /* Flash paziņojumi */
     .flash { padding:0.9rem 1rem; border-radius:12px; font-weight:600; }

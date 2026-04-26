@@ -1,88 +1,153 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mans profils - Auto Detailing</title>
+@extends('layouts.public')
+
+@section('title', 'Mans profils - Auto Detailing')
+
+@push('styles')
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#fafafa; color:#1a1a1a; }
-        header { background:white; border-bottom:1px solid #e8e8e8; position:sticky; top:0; z-index:100; }
-        nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-        .logo { font-size:1.3rem; font-weight:600; letter-spacing:-0.5px; }
-        .nav-links { display:flex; list-style:none; gap:2.5rem; }
-        .nav-links a { text-decoration:none; color:#666; font-weight:500; }
-        .nav-links a:hover, .nav-links a.active { color:#1a1a1a; }
-        .nav-right { display:flex; align-items:center; gap:1rem; }
-        .auth-buttons { display:flex; gap:0.6rem; align-items:center; }
-        .user-greeting { font-weight:600; }
-        .btn-cart, .btn-profile, .btn-logout { padding:0.45rem 1rem; border-radius:8px; border:none; text-decoration:none; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem; }
-        .btn-cart { background:white; border:1px solid #e8e8e8; color:#1a1a1a; }
-        .btn-profile { background:#1a1a1a; color:white; }
-        .btn-logout { background:#f1f1f1; color:#1a1a1a; }
-        .btn-cart:hover { background:#f5f5f5; }
-        .btn-profile:hover { background:#333; }
-        .btn-logout:hover { background:#dfdfdf; }
-        main { max-width:1100px; margin:2rem auto 4rem; background:white; border-radius:24px; padding:3rem; border:1px solid #e8e8e8; display:flex; flex-direction:column; gap:2.5rem; }
-        .profile-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f0; padding-bottom:1.5rem; }
-        .profile-section { border:1px solid #f4f4f4; border-radius:18px; padding:1.5rem; background:#fafafa; display:flex; flex-direction:column; gap:1rem; }
-        .profile-section-header h2 { margin-bottom:0.2rem; font-size:1.3rem; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:#f7f7f7;
+            color:#1a1a1a;
+        }
+        main { max-width:1200px; margin:2.5rem auto 4rem; padding:0 2rem; display:flex; flex-direction:column; gap:2.5rem; }
+        .profile-shell {
+            background:#fffaf6;
+            border-radius:32px;
+            padding:3rem;
+            border:1px solid #f4ddd2;
+            box-shadow:0 20px 40px rgba(24, 24, 27, 0.06);
+            display:flex;
+            flex-direction:column;
+            gap:2rem;
+            position:relative;
+            overflow:hidden;
+        }
+        .profile-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:1.8rem 2rem;
+            border:1px solid #e5e7eb;
+            border-radius:24px;
+            background:#ffffff;
+            position:relative;
+            z-index:1;
+        }
+        .profile-header h1 {
+            font-size:2rem;
+            letter-spacing:-0.03em;
+            margin-bottom:0.35rem;
+        }
+        .profile-header p { color:#6b7280; font-size:1rem; }
+        .profile-section {
+            border:1px solid #f2ddd2;
+            border-radius:24px;
+            padding:1.5rem;
+            background:#fff7f2;
+            display:flex;
+            flex-direction:column;
+            gap:1rem;
+            box-shadow:0 10px 24px rgba(17,24,39,0.04);
+            position:relative;
+            z-index:1;
+        }
+        .profile-section-header {
+            display:flex;
+            flex-direction:column;
+            gap:0.35rem;
+            padding-bottom:0.9rem;
+            border-bottom:1px solid rgba(17,24,39,0.06);
+        }
+        .profile-section-header h2 {
+            margin-bottom:0.2rem;
+            font-size:1.3rem;
+            letter-spacing:-0.02em;
+        }
         .profile-section-header p { color:#777; font-size:0.95rem; }
         .items-list { display:flex; flex-direction:column; gap:1rem; }
-        .item-card { background:white; border-radius:16px; border:1px solid #e8e8e8; padding:1rem 1.5rem; display:flex; justify-content:space-between; gap:1rem; align-items:center; }
-        .item-title { font-weight:600; font-size:1.1rem; }
-        .item-meta { color:#666; font-size:0.95rem; display:flex; gap:1rem; flex-wrap:wrap; }
-        .item-actions { display:flex; gap:0.6rem; align-items:center; }
-        .status-pill { padding:0.4rem 1rem; border-radius:999px; background:#e6f5ef; color:#136b3a; font-weight:600; font-size:0.9rem; }
-        .status-pill.cancelled { background:#fdecea; color:#b5302c; }
-        .cancel-button { border:none; background:none; color:#c0392b; font-weight:600; cursor:pointer; font-size:0.9rem; }
-        .cancel-button:hover { text-decoration:underline; }
+        .item-card {
+            background:#fffdfb;
+            border-radius:20px;
+            border:1px solid #f0e2d9;
+            padding:1.15rem 1.35rem;
+            display:flex;
+            justify-content:space-between;
+            gap:1rem;
+            align-items:center;
+            box-shadow:0 10px 24px rgba(17,24,39,0.04);
+            transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .item-card:hover {
+            transform:translateY(-2px);
+            box-shadow:0 16px 32px rgba(17,24,39,0.08);
+            border-color:#e9c8b7;
+        }
+        .item-title { font-weight:700; font-size:1.08rem; color:#111827; }
+        .item-meta { color:#666; font-size:0.95rem; display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.35rem; }
+        .item-meta span {
+            display:inline-flex;
+            align-items:center;
+            min-height:32px;
+            padding:0.3rem 0.75rem;
+            border-radius:999px;
+            background:#fff1e8;
+            color:#4b5563;
+            border:1px solid #f1d7ca;
+        }
+        .item-actions { display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+        .status-pill {
+            padding:0.5rem 1rem;
+            border-radius:999px;
+            background:#e6f5ef;
+            color:#136b3a;
+            font-weight:700;
+            font-size:0.88rem;
+            border:1px solid #cce9d8;
+        }
+        .status-pill.cancelled { background:#fdecea; color:#b5302c; border-color:#f4c8c0; }
+        .cancel-button {
+            border:none;
+            background:#fff3f1;
+            color:#c0392b;
+            font-weight:700;
+            cursor:pointer;
+            font-size:0.9rem;
+            padding:0.55rem 0.9rem;
+            border-radius:999px;
+        }
+        .cancel-button:hover { background:#ffe7e2; }
         .cancel-note { color:#9a3412; font-weight:600; font-size:0.9rem; }
-        .flash { padding:0.9rem 1rem; border-radius:12px; font-weight:600; }
+        .flash { padding:0.9rem 1rem; border-radius:14px; font-weight:600; position:relative; z-index:1; }
         .flash-success { background:#e6f5ef; color:#136b3a; border:1px solid #b7e2c9; }
         .flash-error { background:#fdecea; color:#b5302c; border:1px solid #f3c0b7; }
+        @media (max-width: 900px) {
+            main { padding:0 1.5rem; }
+            .profile-shell { padding:2rem; border-radius:26px; }
+            .profile-header { padding:1.4rem; }
+            .item-card { flex-direction:column; align-items:flex-start; }
+            .item-actions { flex-wrap:wrap; }
+        }
     </style>
-</head>
-<body>
-<header>
-    <nav>
-        <div class="logo">Auto Detailing</div>
-        <ul class="nav-links">
-            <li><a href="{{ route('home') }}">Galvenā</a></li>
-            <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-            <li><a href="{{ route('products.index') }}">Produkti</a></li>
-            <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-            <li><a href="{{ route('our-work') }}">Darbi</a></li>
-        </ul>
-        <div class="nav-right">
-            <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-            <div class="auth-buttons">
-                <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn-logout">Iziet</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-</header>
+@endpush
 
+@section('content')
 <main>
-    @if(session('success'))
-        <div class="flash flash-success">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="flash flash-error">{{ session('error') }}</div>
-    @endif
-    <section class="profile-header">
-        <div>
-            <h1>Sveiki, {{ $user->name }}</h1>
-            <p>{{ $user->email }}</p>
-        </div>
-    </section>
+    <div class="profile-shell">
+        @if(session('success'))
+            <div class="flash flash-success">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="flash flash-error">{{ session('error') }}</div>
+        @endif
+        <section class="profile-header">
+            <div>
+                <h1>Sveiki, {{ $user->name }}</h1>
+                <p>{{ $user->email }}</p>
+            </div>
+        </section>
 
-    <section class="profile-section">
+        <section class="profile-section">
         <div class="profile-section-header">
             <h2>Mani vebināri</h2>
             <p>Aktīvie un gaidāmie pieteikumi</p>
@@ -111,7 +176,7 @@
                             </div>
                             <div class="item-meta">
                                 @if($registration->offer && $registration->offer->event_date)
-                                    <span>📅 {{ \Carbon\Carbon::parse($registration->offer->event_date)->locale('lv')->translatedFormat('d. F H:i') }}</span>
+                                    <span>{{ \Carbon\Carbon::parse($registration->offer->event_date)->locale('lv')->translatedFormat('d. F H:i') }}</span>
                                 @endif
                                 <span>Formatā: {{ ($registration->offer->format ?? 'online') === 'in_person' ? 'klātienē' : 'tiešsaistē' }}</span>
                             </div>
@@ -134,9 +199,9 @@
                 @endforeach
             </div>
         @endif
-    </section>
+        </section>
 
-    <section class="profile-section">
+        <section class="profile-section">
         <div class="profile-section-header">
             <h2>Servisa vēsture</h2>
             <p>Booking pieteikumi un statuss</p>
@@ -151,40 +216,47 @@
                             <div class="item-title">{{ $booking->car_model ?? 'Auto' }}</div>
                             <div class="item-meta">
                                 @if($booking->date)
-                                    <span>📅 {{ \Carbon\Carbon::parse($booking->date)->translatedFormat('d.m.Y') }}</span>
+                                    <span>{{ \Carbon\Carbon::parse($booking->date)->translatedFormat('d.m.Y') }}</span>
                                 @endif
                                 @if($booking->time_slot)
-                                    <span>⏰ {{ $booking->time_slot }}</span>
+                                    <span>{{ $booking->time_slot }}</span>
                                 @endif
                             </div>
+                            @if($booking->services->isNotEmpty())
+                                <div style="margin-top:0.5rem; color:#555; font-size:0.95rem;">
+                                    {{ $booking->services->pluck('name')->join(', ') }}
+                                </div>
+                            @endif
                         </div>
                         @php
                             $status = $booking->status ?? 'pending';
                             $statusLabels = [
-                                'pending' => 'Apstrādē',
+                                'pending' => 'Procesā',
                                 'approved' => 'Apstiprināts',
-                                'rejected' => 'Atteikts',
+                                'rejected' => 'Atcelts',
                             ];
                         @endphp
                         <div class="item-actions">
                             <span class="status-pill {{ $status === 'rejected' ? 'cancelled' : '' }}">
                                 {{ $statusLabels[$status] ?? ucfirst($status) }}
                             </span>
-                            <form method="POST"
-                                  action="{{ route('profile.bookings.cancel', $booking) }}"
-                                  onsubmit="return confirm('Vai tiešām atcelt šo rezervāciju?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="cancel-button">Atcelt</button>
-                            </form>
+                            @if($status === 'pending')
+                                <form method="POST"
+                                      action="{{ route('profile.bookings.cancel', $booking) }}"
+                                      onsubmit="return confirm('Vai tiešām atcelt šo rezervāciju?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="cancel-button">Atcelt</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach
             </div>
         @endif
-    </section>
+        </section>
 
-    <section class="profile-section">
+        <section class="profile-section">
         <div class="profile-section-header">
             <h2>Produktu pasūtījumi</h2>
             <p>Grozā iegādātie produkti</p>
@@ -211,8 +283,19 @@
                             @endif
                         </div>
                         <div class="item-actions">
-                            <span class="status-pill {{ $order->status === 'cancelled' ? 'cancelled' : '' }}">{{ ucfirst($order->status) }}</span>
-                            @if($order->status !== 'cancelled')
+                            @php
+                                $orderStatus = $order->status ?? 'pending';
+                                $orderStatusLabels = [
+                                    'pending' => 'Apstrādē',
+                                    'processing' => 'Apstrādē',
+                                    'shipped' => 'Izsūtīts',
+                                    'completed' => 'Izsūtīts',
+                                    'cancelled' => 'Atcelts',
+                                ];
+                                $orderStatusLabel = $orderStatusLabels[$orderStatus] ?? ucfirst($orderStatus);
+                            @endphp
+                            <span class="status-pill {{ $orderStatus === 'cancelled' ? 'cancelled' : '' }}">{{ $orderStatusLabel }}</span>
+                            @if(!in_array($orderStatus, ['cancelled', 'completed', 'shipped'], true))
                                 <form method="POST"
                                       action="{{ route('profile.orders.cancel', $order) }}"
                                       onsubmit="return confirm('Vai tiešām atcelt šo pasūtījumu?');">
@@ -226,7 +309,7 @@
                 @endforeach
             </div>
         @endif
-    </section>
+        </section>
+    </div>
 </main>
-</body>
-</html>
+@endsection

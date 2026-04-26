@@ -38,6 +38,7 @@
         <tr>
             <th>Klients</th>
             <th>Auto</th>
+            <th>Pakalpojumi</th>
             <th>Datums</th>
             <th>Laiks</th>
             <th>Statuss</th>
@@ -54,12 +55,30 @@
                 </td>
                 <!-- Auto modelis, kuru klients pieteicis -->
                 <td>{{ $booking->car_model }}</td>
+                <td>
+                    @if($booking->services->isNotEmpty())
+                        {{ $booking->services->pluck('name')->join(', ') }}
+                    @else
+                        Nav norādīti
+                    @endif
+                </td>
                 <!-- Rezervācijas datums -->
                 <td>{{ $booking->date }}</td>
                 <!-- Rezervācijas laika slots -->
                 <td>{{ $booking->time_slot }}</td>
                 <!-- Statusa nozīmīte ar krāsojumu pēc statusa -->
-                <td><span class="status-pill {{ $booking->status }}">{{ $booking->status }}</span></td>
+                <td>
+                    @php
+                        $statusLabels = [
+                            'pending' => 'Procesā',
+                            'approved' => 'Apstiprināts',
+                            'rejected' => 'Atcelts',
+                        ];
+                    @endphp
+                    <span class="status-pill {{ $booking->status }}">
+                        {{ $statusLabels[$booking->status] ?? $booking->status }}
+                    </span>
+                </td>
                 <td>
                     <div class="actions">
                         <!-- Apstiprināšanas darbība -->
@@ -90,7 +109,7 @@
             </tr>
         @empty
             <!-- Tukšs stāvoklis, ja nav neviena pieteikuma -->
-            <tr><td colspan="6">Nav pieteikumu.</td></tr>
+            <tr><td colspan="7">Nav pieteikumu.</td></tr>
         @endforelse
         </tbody>
     </table>

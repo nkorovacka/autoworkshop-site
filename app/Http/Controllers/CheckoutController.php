@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class CheckoutController extends Controller
@@ -53,7 +52,15 @@ class CheckoutController extends Controller
                 ->withErrors(['cart' => 'Grozā nav produktu.']);
         }
 
-        // Validē pasūtījuma datus, ieskaitot kartes laukus un piegādes metodi.
+        // Validē checkout formā ievadītos datus.
+        // Šajā posmā tiek pārbaudīti:
+        // - klienta telefona numura formāts,
+        // - kartes turētāja vārds,
+        // - kartes numura garums,
+        // - kartes derīguma termiņa formāts,
+        // - CVC koda garums,
+        // - piegādes veids,
+        // - un papildu piezīmes.
         $data = $request->validate([
             'customer_name' => 'nullable|string|max:255',
             'customer_phone' => [
@@ -75,25 +82,34 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:500',
         ], [
             'customer_phone.regex' => 'Telefona numurs ir par garu vai neatbilstošā formātā (maks. 13 cipari un izvēles +).',
+            'card_number.digits_between' => 'Kartes numuram jābūt no 13 līdz 19 cipariem.',
         ]);
 
-        // Pārbauda, vai kartes derīgums ir vismaz nākamajā mēnesī.
+        // No kartes derīguma termiņa izdala mēnesi un gadu,
+        // lai varētu pārvērst to par pilnvērtīgu datumu un salīdzināt ar šodienu.
         [$expMonth, $expYear] = explode('/', $data['card_expiry']);
         $expYearFull = 2000 + (int) $expYear;
         $expiryDate = Carbon::createFromDate($expYearFull, (int) $expMonth, 1)->endOfMonth();
         $minValidDate = now()->addMonth()->startOfMonth();
+
+        // Kartes derīguma termiņam jābūt vismaz vienu mēnesi uz priekšu,
+        // pretējā gadījumā pasūtījuma noformēšana netiek atļauta.
         if ($expiryDate->lt($minValidDate)) {
             return back()
                 ->withInput()
                 ->withErrors(['card_expiry' => 'Kartes derīguma termiņam jābūt vismaz vienu mēnesi pēc šodienas.']);
         }
 
-        // Piegādei obligāti nepieciešama adrese.
+        // Ja klients izvēlas piegādi uz adresi,
+        // piegādes adreses lauks kļūst obligāts.
         if ($data['shipping_method'] === 'delivery' && empty($data['shipping_address'])) {
             return back()->withInput()->withErrors(['shipping_address' => 'Lūdzu ievadi piegādes adresi.']);
         }
 
-        // Pārbauda, vai katrs produkts vēl ir pieejams nepieciešamajā daudzumā.
+        // Pirms pasūtījuma izveides vēlreiz pārbauda,
+        // vai katrs produkts joprojām eksistē un ir pieejams pietiekamā daudzumā.
+        // Tas novērš situāciju, kur klients mēģina nopirkt preci,
+        // kuras atlikums pa to laiku jau ir samazinājies.
         foreach ($items as $item) {
             if (!$item->product || $item->quantity > $item->product->stock) {
                 return redirect()->route('cart.index')
@@ -101,21 +117,15 @@ class CheckoutController extends Controller
             }
         }
 
-        // Aprēķina kopējo summu un sagatavo preču kopsavilkumu.
+        // Aprēķina pasūtījuma kopējo summu un kopējo preču skaitu.
         $subtotal = $items->sum(fn ($item) => (float) $item->unit_price * $item->quantity);
         $totalItems = $items->sum('quantity');
-        $itemsSummary = $items->map(function ($item) {
-            return [
-                'product_id' => $item->product_id,
-                'name' => $item->product->name ?? 'Produkts #'.$item->product_id,
-                'quantity' => $item->quantity,
-                'unit_price' => (float) $item->unit_price,
-            ];
-        })->values();
 
-        // Saglabā pasūtījumu un pozīcijas vienā transakcijā.
-        DB::transaction(function () use ($items, $subtotal, $data, $totalItems, $itemsSummary) {
-            // Sagatavo pasūtījuma datus, ieskaitot kartes pēdējās 4 ciparus.
+        // Pasūtījuma izveide notiek vienā datubāzes transakcijā.
+        // Tas nozīmē: ja kāds no soļiem neizdodas,
+        // pasūtījums netiek saglabāts daļēji.
+        DB::transaction(function () use ($items, $subtotal, $data, $totalItems) {
+            // Sagatavo galvenos pasūtījuma datus, kas tiks ierakstīti orders tabulā.
             $payload = [
                 'user_id' => auth()->id(),
                 'customer_name' => $data['customer_name']
@@ -129,22 +139,14 @@ class CheckoutController extends Controller
                 'shipping_address' => $data['shipping_method'] === 'delivery' ? $data['shipping_address'] : null,
                 'payment_method' => 'card',
                 'card_holder' => $data['card_holder'],
-                'card_last4' => substr($data['card_number'], -4),
-                'items_summary' => $itemsSummary->toJson(),
                 'notes' => $data['notes'] ?? null,
             ];
 
-            // Saderībai ar vecu shēmu: ja ir product_id kolonna, aizpilda tikai vienam produktam.
-            if (Schema::hasColumn('orders', 'product_id')) {
-                $payload['product_id'] = $items->count() === 1
-                    ? $items->first()->product_id
-                    : null;
-            }
-
-            // Izveido pasūtījumu.
+            // Izveido pašu pasūtījuma ierakstu.
             $order = Order::create($payload);
 
-            // Saglabā pasūtījuma rindas un samazina noliktavas atlikumu.
+            // Katram groza produktam izveido pasūtījuma rindu
+            // un pēc tam samazina konkrētā produkta atlikumu noliktavā.
             foreach ($items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -156,10 +158,12 @@ class CheckoutController extends Controller
                 $item->product->decrement('stock', $item->quantity);
             }
 
-            // Iztīra grozu pēc veiksmīgas pasūtījuma izveides.
+            // Pēc veiksmīgas pasūtījuma saglabāšanas iztīra lietotāja grozu.
             CartItem::where('user_id', auth()->id())->delete();
         });
 
+        // Pēc checkout pabeigšanas lietotāju novirza uz produktu lapu
+        // un parāda veiksmīgas noformēšanas paziņojumu.
         return redirect()->route('products.index')
             ->with('success', 'Paldies! Pasūtījums veiksmīgi noformēts.');
     }

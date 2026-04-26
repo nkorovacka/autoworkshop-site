@@ -6,7 +6,6 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\OfferController;
-use App\Http\Controllers\OrderController; // <- pievienojam šo
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
@@ -83,7 +82,6 @@ Route::get('/services', [ServiceController::class, 'index'])->name('services.ind
 // Produkti (katalogs un produkta lapa)
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::post('/products/{product}/order', [OrderController::class, 'store'])->name('products.order');
 
 Route::middleware('auth')->group(function () {
     // Grozs

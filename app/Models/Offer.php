@@ -40,11 +40,4 @@ class Offer extends Model
         return $this->hasMany(OfferRegistration::class);
     }
 
-    /**
-     * Saite uz rezervācijām, ja piedāvājums ir detailing tipa.
-     */
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
 }

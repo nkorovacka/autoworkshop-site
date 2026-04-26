@@ -40,11 +40,8 @@ return new class extends Migration
             if (!Schema::hasColumn('orders', 'card_holder')) {
                 $table->string('card_holder')->after('payment_method');
             }
-            if (!Schema::hasColumn('orders', 'card_last4')) {
-                $table->string('card_last4', 4)->after('card_holder');
-            }
             if (!Schema::hasColumn('orders', 'notes')) {
-                $table->text('notes')->nullable()->after('card_last4');
+                $table->text('notes')->nullable()->after('card_holder');
             }
             if (!Schema::hasColumn('orders', 'created_at')) {
                 $table->timestamps();
@@ -61,7 +58,6 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             foreach ([
                 'notes',
-                'card_last4',
                 'card_holder',
                 'payment_method',
                 'shipping_address',

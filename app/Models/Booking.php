@@ -21,21 +21,9 @@ class Booking extends Model
         'interior_condition',
         'date',
         'time_slot',
-        'services',
         'total_price',
         'status',
-        'offer_id', // svarīgi: sasaistīts ar piedāvājumu
     ];
-
-    /**
-     * Saite uz piedāvājumu, ja rezervācija veikta no akcijas/pasākuma.
-     */
-    public function offer()
-    {
-        // Offer modelis ir tajā pašā App\Models namespace,
-        // tāpēc varam vienkārši izmantot Offer::class
-        return $this->belongsTo(Offer::class);
-    }
 
     /**
      * Saite uz lietotāju, kurš izveidoja rezervāciju.
@@ -43,5 +31,13 @@ class Booking extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Rezervācijai piesaistītie pakalpojumi.
+     */
+    public function services()
+    {
+        return $this->belongsToMany(Service::class);
     }
 }

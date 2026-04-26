@@ -24,7 +24,6 @@ return new class extends Migration
         $table->string('condition');
         $table->date('date');
         $table->string('time_slot');
-        $table->text('services'); // saglabāsim kā tekstu (piem.: "exterior, interior")
 
         // Cena
         $table->decimal('total_price', 8, 2);

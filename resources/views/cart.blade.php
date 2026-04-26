@@ -1,38 +1,8 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grozs - Auto Detailing Workshop</title>
-</head>
-<body>
-<!-- Galvene ar navigāciju un lietotāja darbībām -->
-<header>
-    <nav>
-        <!-- Zīmola nosaukums -->
-        <div class="logo">Auto Detailing</div>
-        <!-- Galvenā navigācija -->
-        <ul class="nav-links">
-            <li><a href="{{ route('home') }}">Galvenā</a></li>
-            <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-            <li><a href="{{ route('products.index') }}">Produkti</a></li>
-            <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-            <li><a href="{{ route('our-work') }}">Darbi</a></li>
-        </ul>
-        <!-- Lietotāja konta darbības -->
-        <div class="nav-right">
-            <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-            <div class="auth-buttons signed-in">
-                <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                    @csrf
-                    <button type="submit" class="btn-logout">Iziet</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-</header>
+@extends('layouts.public')
+
+@section('title', 'Grozs - Auto Detailing Workshop')
+
+@section('content')
 
 <main>
     <!-- Lapas virsraksts -->
@@ -85,19 +55,9 @@
                 @endforeach
             </section>
             <aside class="cart-summary">
-                <!-- Groza kopsavilkuma bloks -->
-                <h2>Kopsavilkums</h2>
-                <div class="summary-row">
-                    <span>Starpsumma</span>
-                    <span>{{ number_format($subtotal, 2) }} €</span>
-                </div>
-                <div class="summary-row">
-                    <span>Piegāde</span>
-                    <span>Aprēķināsim individuāli</span>
-                </div>
-                <div class="summary-row summary-total">
-                    <span>Kopā</span>
-                    <span>{{ number_format($subtotal, 2) }} €</span>
+                <div class="cart-total-box">
+                    <span class="cart-total-label">Summa</span>
+                    <span class="cart-total-amount">{{ number_format($subtotal, 2) }} €</span>
                 </div>
                 <!-- Poga uz pasūtījuma noformēšanu -->
                 <a class="btn-primary" href="{{ route('checkout.index') }}">Turpināt pasūtījumu</a>
@@ -111,46 +71,8 @@
     @endif
 </main>
 
-<!-- Kājenes bloks ar kontaktiem un ātrajām saitēm -->
-<footer>
-    <div class="footer-wrapper">
-        <div class="footer-column">
-            <h4>Salons</h4>
-            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-        </div>
-        <div class="footer-column">
-            <h4>Kontakti</h4>
-            <ul>
-                <li>📞 +371 2000 0000</li>
-                <li>✉️ info@detailing.lv</li>
-                <li>WhatsApp & Telegram</li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Ātrās saites</h4>
-            <ul>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Sekojiet mums</h4>
-            <ul>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-    </div>
-</footer>
-
 <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+@push('styles')
 <style>
     /* Globālā nullēšana un kastes modelis */
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -165,37 +87,6 @@
     }
     /* Pamatteksts un fons */
     body { font-family:"Inter", Arial, sans-serif; background:#f7f7f7; color:var(--ink); line-height:1.6; }
-    /* Galvene un kājene */
-    header { background:white; border-bottom:1px solid var(--border); }
-    footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
-    .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
-    .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
-    .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-    .footer-column a { text-decoration:none; color:#666; }
-    .footer-column a:hover { color:var(--ink); }
-    .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
-    /* Navigācija */
-    nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-    .logo { font-weight:600; letter-spacing:-0.5px; font-size:1.15rem; }
-    .nav-links { list-style:none; display:flex; gap:1.8rem; }
-    .nav-links a { text-decoration:none; color:var(--muted); font-weight:500; transition:color 0.2s; }
-    .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-    .nav-right { display:flex; align-items:center; gap:1.2rem; }
-    .icon-button { background:none; border:none; font-size:1.2rem; color:var(--muted); cursor:pointer; }
-    .auth-buttons { display:flex; gap:0.8rem; }
-    .auth-buttons.signed-in { gap:0.6rem; }
-    .btn-login, .btn-signup { padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
-    .btn-login { border:1px solid var(--border); background:none; }
-    .btn-login:hover { background:#f5f5f5; }
-    .btn-signup { border:none; background:var(--ink); color:white; }
-    .btn-profile { border:none; background:var(--ink); color:white; padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
-    .btn-profile:hover { background:#333; }
-    .btn-cart { border:1px solid var(--border); background:white; color:var(--ink); padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
-    .btn-cart:hover { background:#f5f5f5; }
-    .user-greeting { font-size:0.85rem; font-weight:600; color:var(--ink); white-space:nowrap; }
-    .logout-form { margin:0; }
-    .btn-logout { border:none; background:#f1f1f1; color:var(--ink); padding:0.45rem 1rem; border-radius:8px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.2s; }
-    .btn-logout:hover { background:#dfdfdf; }
     /* Galvenais saturs */
     main { max-width:1200px; margin:0 auto; padding:2.5rem 2rem 3rem; }
     h1 { font-size:2.2rem; margin-bottom:0.3rem; }
@@ -218,10 +109,12 @@
     .remove-form button { border:none; background:none; color:#c0392b; cursor:pointer; font-size:1.2rem; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
     /* Kopsavilkuma bloks */
-    .cart-summary { background:white; border:1px solid var(--border); border-radius:16px; padding:1.3rem; }
-    .summary-row { display:flex; justify-content:space-between; margin-bottom:0.8rem; color:#6b6b6b; }
-    .summary-total { font-size:1.3rem; font-weight:700; color:var(--ink); }
-    .btn-primary { width:100%; margin-top:1rem; padding:0.9rem; border-radius:12px; border:none; background:var(--ink); color:white; font-weight:600; cursor:pointer; }
+    .cart-summary { background:white; border:1px solid var(--border); border-radius:18px; padding:1.4rem; box-shadow:0 10px 24px rgba(17,24,39,0.04); }
+    .cart-total-box { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; padding:1rem; border-radius:14px; background:#fff7f2; border:1px solid #f4ddd2; }
+    .cart-total-label { color:#6b6b6b; font-size:0.95rem; font-weight:600; }
+    .cart-total-amount { color:var(--ink); font-size:1.7rem; font-weight:800; line-height:1; white-space:nowrap; }
+    .btn-primary { width:100%; margin-top:1rem; padding:0.95rem 1rem; border-radius:12px; border:none; background:var(--ink); color:white; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; display:block; transition:background 0.2s ease, transform 0.2s ease; }
+    .btn-primary:hover { background:#333; transform:translateY(-1px); }
     /* Tukšā groza stāvoklis */
     .empty-state { background:white; border:1px dashed #c9c9c9; border-radius:16px; padding:2rem; text-align:center; }
     .empty-state a { color:var(--accent-dark); font-weight:600; text-decoration:none; }
@@ -231,6 +124,9 @@
         .cart-item { grid-template-columns:1fr; gap:0.5rem; align-items:flex-start; }
     }
 </style>
+@endpush
+
+@push('scripts')
 <script>
     // Pēc lapas ielādes pieslēdz automātisku daudzuma saglabāšanu.
     document.addEventListener('DOMContentLoaded', () => {
@@ -263,5 +159,5 @@
         });
     });
 </script>
-</body>
-</html>
+@endpush
+@endsection

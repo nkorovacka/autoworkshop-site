@@ -24,8 +24,6 @@ return new class extends Migration
             $table->string('shipping_address')->nullable();
             $table->string('payment_method')->default('card');
             $table->string('card_holder');
-            $table->string('card_last4', 4);
-            $table->longText('items_summary')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });

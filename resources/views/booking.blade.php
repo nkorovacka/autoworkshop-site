@@ -1,54 +1,14 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <title>Rezervēt vizīti - Auto Detailing Workshop</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-    <!-- Galvenā navigācija un lietotāja stāvoklis -->
-    <header>
-        <nav>
-            <!-- Zīmola nosaukums -->
-            <div class="logo">Auto Detailing</div>
-            <!-- Galvenās navigācijas saites -->
-            <ul class="nav-links">
-                <li><a href="{{ route('home') }}">Galvenā</a></li>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('our-work') }}">Darbi</a></li>
-            </ul>
-            <!-- Lietotāja darbības: grozs, profils, vai pieteikšanās -->
-            <div class="nav-right">
-                @auth
-                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                    <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                    </div>
-                @else
-                    <button class="icon-button" title="Profils">👤</button>
-                    <div class="auth-buttons">
-                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
-    </header>
+@extends('layouts.public')
+
+@section('title', 'Rezervēt vizīti - Auto Detailing Workshop')
+
+@section('content')
 
     <div class="container">
         <!-- Lapas virsraksts un īss apraksts -->
         <div class="page-header">
             <h1>Rezervē savu vizīti</h1>
             <p>Aizpildi formu un saņem apstiprinājumu dažu minūšu laikā</p>
-        </div>
-
-        <!-- Piedāvājuma baneris (rādās, ja rezervācija nāk no īpaša piedāvājuma) -->
-        <div class="offer-banner" id="offerBanner" style="display: none;">
-            <h2 id="offerTitle">Īpašais piedāvājums</h2>
-            <p id="offerDescription"></p>
         </div>
 
         <!-- Sistēmas paziņojumi par veiksmēm/kļūdām -->
@@ -77,9 +37,6 @@
                     @csrf
                     <!-- Slēptais lauks kopējai summai, ko aizpilda JS -->
                     <input type="hidden" id="totalField" name="total" value="{{ old('total', '0') }}">
-                    @if($offer)
-                        <input type="hidden" name="offer_id" value="{{ $offer->id }}">
-                    @endif
                     <!-- Personas dati -->
                     <div class="form-section">
                         <h3 class="section-title">
@@ -178,11 +135,8 @@
 
                     <!-- Datums un laiks -->
                     @php
-                        $isOfferSchedule = $offer && $offer->type === 'detailing' && $offer->has_timeslots;
                         $minDate = $minBookingDate ?? \Carbon\Carbon::tomorrow()->format('Y-m-d');
-                        $defaultDateValue = $isOfferSchedule
-                            ? ($offer->event_date ?? '')
-                            : old('date', $minDate);
+                        $defaultDateValue = old('date', $minDate);
                     @endphp
                     <div class="form-section">
                         <h3 class="section-title">
@@ -192,53 +146,23 @@
                         <div class="form-grid">
                             <div class="form-field">
                                 <label for="date">Datums *</label>
-                                @if($isOfferSchedule && !empty($offer->event_date))
-                                    <input type="date"
-                                           id="date"
-                                           name="date"
-                                           value="{{ $defaultDateValue }}"
-                                           readonly
-                                           required>
-                                    <small style="color:#777;">Datums fiksēts: {{ \Carbon\Carbon::parse($offer->event_date)->format('d.m.Y') }}</small>
-                                @else
-                                    <input type="date"
-                                           id="date"
-                                           name="date"
-                                           value="{{ $defaultDateValue }}"
-                                           min="{{ $minDate }}"
-                                           required>
-                                    <small style="color:#777;">Rezervācijas pieejamas tikai darba dienās un sākot ar rītdienu.</small>
-                                @endif
+                                <input type="date"
+                                       id="date"
+                                       name="date"
+                                       value="{{ $defaultDateValue }}"
+                                       min="{{ $minDate }}"
+                                       required>
+                                <small style="color:#777;">Rezervācijas pieejamas tikai darba dienās un sākot ar rītdienu.</small>
                             </div>
                             <div class="form-field">
                                 <label for="time">Laiks *</label>
-                                @if($isOfferSchedule && !empty($timeSlots))
-                                    <select id="time" name="time" required>
-                                        <option value="">-- Izvēlies laiku --</option>
-                                        @foreach($timeSlots as $slot)
-                                            @php
-                                                $taken = in_array($slot, $takenSlots ?? []);
-                                                $selected = old('time') === $slot;
-                                            @endphp
-                                            <option value="{{ $slot }}"
-                                                    {{ $selected ? 'selected' : '' }}
-                                                    {{ $taken ? 'disabled' : '' }}>
-                                                {{ $slot }}{{ $taken ? ' (aizņemts)' : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @if(!empty($takenSlots))
-                                        <small style="color:#777;">Pelēkie laiki jau ir aizņemti.</small>
-                                    @endif
-                                @else
-                                    <select id="time" name="time" required>
-                                        <option value="">-- Izvēlies laiku --</option>
-                                        @foreach($generalTimeSlots as $slot)
-                                            <option value="{{ $slot }}" @selected(old('time') === $slot)>{{ $slot }}</option>
-                                        @endforeach
-                                    </select>
-                                    <small style="color:#777;">Pieejami laiki darba dienās: 9:00, 11:00, 13:00, 15:00, 17:00 un 19:00.</small>
-                                @endif
+                                <select id="time" name="time" required>
+                                    <option value="">-- Izvēlies laiku --</option>
+                                    @foreach($generalTimeSlots as $slot)
+                                        <option value="{{ $slot }}" @selected(old('time') === $slot)>{{ $slot }}</option>
+                                    @endforeach
+                                </select>
+                                <small style="color:#777;">Pieejami laiki darba dienās: 9:00, 11:00, 13:00, 15:00, 17:00 un 19:00.</small>
                             </div>
                         </div>
                         <div class="info-box">
@@ -252,6 +176,9 @@
                             <span class="section-icon">✨</span>
                             Izvēlies pakalpojumus
                         </h3>
+                        @php
+                            $oldServices = collect(old('services', []))->map(fn ($value) => (string) $value)->all();
+                        @endphp
                         <div class="services-grid" id="servicesGrid">
                             @foreach($services as $service)
                                 @php
@@ -261,9 +188,11 @@
                                     <input type="checkbox"
                                            id="{{ $inputId }}"
                                            name="services[]"
-                                           value="{{ $service->slug }}"
+                                           value="{{ $service->id }}"
                                            data-price="{{ $service->base_price }}"
-                                           data-name="{{ $service->name }}">
+                                           data-slug="{{ $service->slug }}"
+                                           data-name="{{ $service->name }}"
+                                           @checked(in_array((string) $service->id, $oldServices, true))>
                                     <label for="{{ $inputId }}" class="service-label">
                                         <div class="icon">{{ $service->icon ?? '✨' }}</div>
                                         <div class="name">{{ $service->name }}</div>
@@ -327,46 +256,8 @@
         </div>
     </div>
 
-    <!-- Kājenes informācija ar kontaktu un ātrajām saitēm -->
-    <footer>
-        <div class="footer-wrapper">
-            <div class="footer-column">
-                <h4>Salons</h4>
-                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-            </div>
-            <div class="footer-column">
-                <h4>Kontakti</h4>
-                <ul>
-                    <li>📞 +371 2000 0000</li>
-                    <li>✉️ info@detailing.lv</li>
-                    <li>WhatsApp & Telegram</li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Ātrās saites</h4>
-                <ul>
-                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Sekojiet mums</h4>
-                <ul>
-                    <li><a href="#">Instagram</a></li>
-                    <li><a href="#">Facebook</a></li>
-                    <li><a href="#">YouTube</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-        </div>
-    </footer>
-
     <!-- Iekšējie stili: CSS novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+@push('styles')
     <style>
         /* Globāla nullēšana un kastes modelis vienkāršākai izkārtošanai */
         * {
@@ -389,163 +280,6 @@
             line-height: 1.6;
             color: var(--ink);
             background: #fafafa;
-        }
-
-        /* Galvene ar lipīgu pozicionējumu un robežlīniju */
-        header {
-            background: white;
-            border-bottom: 1px solid #e8e8e8;
-            padding: 1.2rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        /* Navigācijas joslas platums un izkārtojums */
-        nav {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Logo / zīmola nosaukums */
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--ink);
-            letter-spacing: -0.5px;
-        }
-
-        /* Navigācijas saites un to stāvokļi */
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2.5rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--ink);
-        }
-
-        /* Labās puses darbības: grozs, profils, pieteikšanās */
-        .nav-right {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .icon-button {
-            background: none;
-            border: none;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: #666;
-            transition: color 0.2s;
-        }
-
-        .icon-button:hover {
-            color: var(--ink);
-        }
-
-        /* Autorizācijas pogu grupa */
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn-login {
-            padding: 0.5rem 1.2rem;
-            background: none;
-            border: 1px solid #e8e8e8;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--ink);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-login:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-signup {
-            padding: 0.5rem 1.2rem;
-            background: var(--ink);
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-signup:hover {
-            background: #333;
-        }
-
-        .auth-buttons.signed-in {
-            gap: 0.6rem;
-        }
-
-        .user-greeting {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--ink);
-            white-space: nowrap;
-        }
-
-        .btn-cart,
-        .btn-profile {
-            padding: 0.45rem 1.1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .btn-cart {
-            border: 1px solid #e8e8e8;
-            background: white;
-            color: var(--ink);
-        }
-
-        .btn-cart:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-profile {
-            border: none;
-            background: var(--ink);
-            color: white;
-        }
-
-        .btn-profile:hover {
-            background: #333;
         }
 
         /* Konteiners, kas nosaka satura platumu un iekšējo atstarpi */
@@ -571,25 +305,6 @@
         .page-header p {
             color: #666;
             font-size: 1.1rem;
-        }
-
-        /* Piedāvājuma baneris īpašiem pasākumiem */
-        .offer-banner {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 16px;
-            margin-bottom: 3rem;
-            text-align: center;
-        }
-
-        .offer-banner h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .offer-banner p {
-            opacity: 0.95;
         }
 
         /* Rezervācijas formas izkārtojums ar sānu kopsavilkumu */
@@ -826,24 +541,6 @@
             .booking-summary {
                 position: static;
             }
-
-            .nav-links {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1rem;
-            }
-
-            nav {
-                flex-direction: column;
-                gap: 0.8rem;
-            }
-
-            .nav-right {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
         }
 
         @media (max-width: 640px) {
@@ -876,56 +573,10 @@
             font-size: 0.95rem;
         }
 
-        /* Kājenes noformējums */
-        footer {
-            background: white;
-            border-top: 1px solid #e8e8e8;
-            margin-top: 4rem;
-        }
-
-        .footer-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 2rem;
-            color: #555;
-        }
-
-        .footer-column h4 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15rem;
-            color: var(--ink);
-            margin-bottom: 1rem;
-        }
-
-        .footer-column ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .footer-column a {
-            text-decoration: none;
-            color: #666;
-        }
-
-        .footer-column a:hover {
-            color: var(--ink);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding: 1.5rem;
-            color: #777;
-            font-size: 0.9rem;
-            border-top: 1px solid #f0f0f0;
-        }
     </style>
+@endpush
 
+@push('scripts')
     <!-- Aprēķinu un kopsavilkuma loģika rezervācijas formai -->
     <script>
         // Price Calculator
@@ -957,7 +608,9 @@
         const interiorConditionSelect = document.getElementById('interiorCondition');
         const serviceCheckboxes = document.querySelectorAll('input[name="services[]"]');
         // Pakalpojumu grupas, kam ir īpaši noteikumi.
+        // Ekskluzīvie pakalpojumi ir pilnie komplekti, kurus nedrīkst kombinēt ar citiem.
         const exclusiveServiceSlugs = ['pilns-detailing-komplekts', 'vip-programma'];
+        // Šie pakalpojumi prasa papildu informāciju par salonu.
         const interiorServiceSlugs = ['salona-dzila-tirisana', 'pilns-detailing-komplekts', 'vip-programma'];
         // Koeficienti cenu korekcijai pēc auto stāvokļa.
         const bodyConditionMultipliers = {
@@ -989,10 +642,8 @@
         const summaryDateEl = document.getElementById('summaryDate');
         const dateField = document.getElementById('date');
         const timeField = document.getElementById('time');
-        // Servera puses konfigurācija: vai ir fiksēts piedāvājuma grafiks.
-        const usesOfferSchedule = @json($isOfferSchedule);
         // Minimālais datums parastām rezervācijām.
-        const minBookingDate = @json($isOfferSchedule ? null : $minDate);
+        const minBookingDate = @json($minDate);
         // Jau aizņemtie laiki pa datumiem (tikai parastajiem booking).
         const generalBookedSlots = @json($generalBookedSlots);
 
@@ -1034,10 +685,10 @@
         function getSelectedServiceSlugs() {
             return Array.from(serviceCheckboxes)
                 .filter(cb => cb.checked)
-                .map(cb => cb.value);
+                .map(cb => cb.dataset.slug);
         }
 
-        // Nosaka, vai nepieciešams salona materiāls/stāvoklis.
+        // Nosaka, vai izvēlēto pakalpojumu dēļ ir jāprasa salona materiāls un stāvoklis.
         function requiresInteriorDetails() {
             return getSelectedServiceSlugs().some(slug => interiorServiceSlugs.includes(slug));
         }
@@ -1059,7 +710,8 @@
             return true;
         }
 
-        // Dinamiski ieslēdz/izslēdz salona stāvokļa laukus un validāciju.
+        // Dinamiski ieslēdz/izslēdz salona lauku obligātumu.
+        // Ja izvēlēts salona pakalpojums, materiāls un stāvoklis kļūst obligāti.
         function updateInteriorRequirementState() {
             const required = requiresInteriorDetails();
             if (interiorMaterialSelect) {
@@ -1075,7 +727,7 @@
 
         // Pārbauda pieejamos laikus konkrētajam datumam (parastajiem booking).
         function updateGeneralTimeAvailability() {
-            if (usesOfferSchedule || !timeField) {
+            if (!timeField) {
                 return;
             }
 
@@ -1083,8 +735,6 @@
             const takenList = selectedDate && generalBookedSlots[selectedDate]
                 ? generalBookedSlots[selectedDate]
                 : [];
-
-            let selectionCleared = false;
 
             // Atspējo aizņemtos laikus un pieliek norādi tekstā.
             Array.from(timeField.options).forEach(option => {
@@ -1094,11 +744,6 @@
                 const isTaken = takenList.includes(option.value);
                 option.disabled = isTaken;
                 option.textContent = option.value + (isTaken ? ' (aizņemts)' : '');
-
-                if (isTaken && option.selected) {
-                    option.selected = false;
-                    selectionCleared = true;
-                }
             });
 
             // Ja datums nav izvēlēts, atjauno visus laikus.
@@ -1108,12 +753,6 @@
                     option.disabled = false;
                     option.textContent = option.value;
                 });
-            }
-
-            // Ja izvēlētais laiks kļuva aizņemts, notīra un parāda kļūdu.
-            if (selectionCleared) {
-                timeField.value = '';
-                showMessage('Šis laiks tika rezervēts. Lūdzu izvēlies citu pieejamo laiku.', 'error');
             }
         }
 
@@ -1252,8 +891,7 @@
 
         // Validē datumu un atjauno laiku pieejamību.
         function ensureValidDate(showFeedback = true) {
-            if (!dateField || usesOfferSchedule) {
-                // Piedāvājuma grafikam datums ir fiksēts.
+            if (!dateField) {
                 updateSummary();
                 return;
             }
@@ -1311,7 +949,8 @@
             }
         }
 
-        // Uzliek noteikumus pakalpojumu kombinācijām (ekskluzīvie vs standarta).
+        // Uzliek pakalpojumu kombināciju noteikumus rezervācijas formā.
+        // Funkcija neļauj lietotājam frontendā izvēlēties neatļautas pakalpojumu kombinācijas.
         function enforceServiceRules(triggerSummary = true) {
             if (!serviceCheckboxes.length) {
                 if (triggerSummary) updateSummary();
@@ -1319,7 +958,8 @@
             }
 
             if (!hasBaseVehicleDetails()) {
-                // Bez auto pamatdatiem pakalpojumu izvēle nav atļauta.
+                // Kamēr nav izvēlēts auto modelis un virsbūves stāvoklis,
+                // pakalpojumu izvēle tiek pilnībā bloķēta.
                 serviceCheckboxes.forEach(cb => {
                     cb.checked = false;
                     cb.disabled = true;
@@ -1330,6 +970,8 @@
                 return;
             }
 
+            // Ja pamatdati ir aizpildīti, sākumā atbloķējam visas izvēles,
+            // un pēc tam piemērojam kombināciju ierobežojumus.
             serviceCheckboxes.forEach(cb => {
                 cb.disabled = false;
             });
@@ -1338,26 +980,36 @@
             let hasStandard = false;
 
             serviceCheckboxes.forEach(cb => {
-                const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                // Katram pakalpojumam nosaka, vai tas ir ekskluzīvs komplekts.
+                const isExclusive = exclusiveServiceSlugs.includes(cb.dataset.slug);
+
+                // Saglabā izvēlētos ekskluzīvos pakalpojumus atsevišķi,
+                // lai pēc tam varētu bloķēt pārējās izvēles.
                 if (isExclusive && cb.checked) {
                     selectedExclusive.push(cb);
                 }
+
+                // Ja izvēlēts kaut viens standarta pakalpojums,
+                // ekskluzīvie komplekti vairs nedrīkst būt pieejami.
                 if (!isExclusive && cb.checked) {
                     hasStandard = true;
                 }
             });
 
-            // Ja izvēlēts ekskluzīvs pakalpojums, bloķē pārējos.
+            // Ja izvēlēts ekskluzīvs pakalpojums, drīkst palikt aktīvs tikai tas viens.
+            // Visi pārējie pakalpojumi tiek atspējoti, jo pilnais komplekts nav kombinējams.
             if (selectedExclusive.length > 0) {
                 const keep = selectedExclusive[0];
                 serviceCheckboxes.forEach(cb => {
-                    const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                    const isExclusive = exclusiveServiceSlugs.includes(cb.dataset.slug);
                     if (isExclusive) {
+                        // Atstāj pieejamu tikai jau izvēlēto ekskluzīvo pakalpojumu.
                         cb.disabled = cb !== keep;
                         if (cb !== keep && cb.checked) {
                             cb.checked = false;
                         }
                     } else {
+                        // Standarta pakalpojumi kopā ar ekskluzīvo komplektu nav atļauti.
                         if (cb.checked) {
                             cb.checked = false;
                         }
@@ -1365,9 +1017,10 @@
                     }
                 });
             } else if (hasStandard) {
-                // Ja izvēlēti standarta pakalpojumi, bloķē ekskluzīvos.
+                // Ja izvēlēti standarta pakalpojumi, tie savā starpā drīkst kombinēties,
+                // taču ekskluzīvie komplekti tiek bloķēti.
                 serviceCheckboxes.forEach(cb => {
-                    const isExclusive = exclusiveServiceSlugs.includes(cb.value);
+                    const isExclusive = exclusiveServiceSlugs.includes(cb.dataset.slug);
                     if (isExclusive) {
                         if (cb.checked) {
                             cb.checked = false;
@@ -1378,16 +1031,18 @@
                     }
                 });
             } else {
-                // Ja nekas nav izvēlēts, viss atkal ir pieejams.
+                // Ja nekas nav izvēlēts, lietotājs var sākt izvēli no jauna.
                 serviceCheckboxes.forEach(cb => {
                     cb.disabled = false;
                 });
             }
 
-            // Atjauno prasības salona laukiem.
+            // Pēc pakalpojumu maiņas pārbauda,
+            // vai tagad jāpadara salona lauki obligāti.
             updateInteriorRequirementState();
 
             if (triggerSummary) {
+                // Ja nepieciešams, uzreiz atjauno rezervācijas kopsavilkumu un cenu.
                 updateSummary();
             }
         }
@@ -1430,18 +1085,11 @@
         // Datuma izvēlei validācija un laiku filtrēšana.
         if (dateField) {
             dateField.addEventListener('change', () => ensureValidDate(true));
-            dateField.addEventListener('input', () => ensureValidDate(false));
         }
         // Laika izvēle atjauno kopsavilkumu.
         if (timeField) {
             timeField.addEventListener('change', updateSummary);
         }
-        // Telefona laukam uzreiz rāda, ja ievade ir pārāk gara vai nederīga.
-        if (phoneInput) {
-            phoneInput.addEventListener('input', () => validatePhoneField(false));
-            phoneInput.addEventListener('blur', () => validatePhoneField(false));
-        }
-
         // Formas iesniegšanas validācija pirms nosūtīšanas.
         if (bookingForm) {
             bookingForm.addEventListener('submit', function(e) {
@@ -1450,22 +1098,22 @@
                 // Pārbauda, vai ir izvēlēts vismaz viens pakalpojums.
                 const hasService = Array.from(serviceCheckboxes).some(cb => cb.checked);
                 if (!hasService) {
-                    showMessage('Lūdzu izvēlies vismaz vienu pakalpojumu', 'error');
+                    showMessage('Lūdzu izvēlies vismaz vienu pakalpojumu.', 'error');
                     isValid = false;
                 }
 
                 // Pārbauda, vai auto modelis ir izvēlēts no saraksta.
                 if (isValid && !carHiddenInput.value) {
-                    showMessage('Lūdzu izvēlies auto modeli no saraksta', 'error');
+                    showMessage('Lūdzu izvēlies auto modeli no saraksta.', 'error');
                     carDisplayInput.focus();
                     isValid = false;
                 }
 
                 // Parastām rezervācijām nepieciešams derīgs datums.
-                if (isValid && !usesOfferSchedule) {
+                if (isValid) {
                     ensureValidDate(false);
                     if (!dateField || !dateField.value) {
-                        showMessage('Lūdzu izvēlies pieejamo darba dienu no kalendāra', 'error');
+                        showMessage('Lūdzu izvēlies pieejamo darba dienu no kalendāra.', 'error');
                         if (dateField) {
                             dateField.focus();
                         }
@@ -1475,7 +1123,7 @@
 
                 // Laiks ir obligāts vienmēr.
                 if (isValid && (!timeField || !timeField.value)) {
-                    showMessage('Lūdzu izvēlies pieejamo laiku', 'error');
+                    showMessage('Lūdzu izvēlies pieejamo laiku.', 'error');
                     if (timeField) {
                         timeField.focus();
                     }
@@ -1484,7 +1132,7 @@
 
                 // Auto/salona dati jābūt aizpildītiem pēc izvēlēm.
                 if (isValid && !hasAllRequiredVehicleDetails()) {
-                    showMessage('Lūdzu aizpildi auto informāciju (un salona sadaļu, ja izvēlies atbilstošus pakalpojumus)', 'error');
+                    showMessage('Lūdzu aizpildi auto informāciju (un salona sadaļu, ja izvēlies atbilstošus pakalpojumus).', 'error');
                     isValid = false;
                 }
 
@@ -1527,22 +1175,11 @@
             }
         }
 
-        // Ja URL satur ?offer=, parāda piedāvājuma baneri.
-        const offerId = urlParams.get('offer');
-        if (offerId) {
-            document.getElementById('offerBanner').style.display = 'block';
-            // In real implementation, fetch offer details
-        }
-
         // Inicializācija pēc lapas ielādes: kopsavilkums, datums un noteikumi.
         handleCarInput();
-        if (usesOfferSchedule) {
-            updateSummary();
-        } else {
-            ensureValidDate(false);
-        }
+        ensureValidDate(false);
         updateInteriorConditionState();
         enforceServiceRules(false);
     </script>
-</body>
-</html>
+@endpush
+@endsection

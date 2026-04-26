@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as ValidationPassword;
 use Illuminate\View\View;
 
@@ -95,7 +94,6 @@ class AuthController extends Controller
                     'password' => Hash::make($data['password']),
                 ])->save();
 
-                $user->setRememberToken(Str::random(60));
             }
         );
 
@@ -124,6 +122,19 @@ class AuthController extends Controller
                     ->numbers()
                     ->symbols(),
             ],
+        ], [
+            'name.required' => 'Visiem laukiem jābūt aizpildītiem.',
+            'email.required' => 'Visiem laukiem jābūt aizpildītiem.',
+            'password.required' => 'Visiem laukiem jābūt aizpildītiem.',
+            'password_confirmation.required' => 'Visiem laukiem jābūt aizpildītiem.',
+            'email.email' => 'Nepareizs e-pasta formāts.',
+            'email.unique' => 'Šāds e-pasts jau tiek izmantots.',
+            'password.confirmed' => 'Paroles nesakrīt.',
+            'password.min' => 'Parole neatbilst prasībām.',
+            'password.letters' => 'Parole neatbilst prasībām.',
+            'password.mixed' => 'Parole neatbilst prasībām.',
+            'password.numbers' => 'Parole neatbilst prasībām.',
+            'password.symbols' => 'Parole neatbilst prasībām.',
         ]);
 
         // Izveido jaunu lietotāju ar šifrētu paroli.
@@ -139,7 +150,8 @@ class AuthController extends Controller
         // Atjauno sesiju drošības nolūkiem (aizsardzība pret sesijas fiksāciju).
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        return redirect()->intended(route('home'))
+            ->with('success', 'Reģistrācija veiksmīga.');
     }
 
     /**
@@ -153,11 +165,16 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // Nosaka, vai lietotājs izvēlējies "Atcerēties mani".
-        $remember = $request->boolean('remember');
+        $user = User::where('email', $credentials['email'])->first();
 
-        // Mēģina autentificēt lietotāju ar norādītajiem datiem.
-        if (Auth::attempt($credentials, $remember)) {
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'Nepareizs e-pasts vai parole.',
+            ])->onlyInput('email');
+        }
+
+        if (Hash::check($credentials['password'], $user->password)) {
+            Auth::login($user);
             // Atjauno sesiju pēc veiksmīgas pieteikšanās.
             $request->session()->regenerate();
 

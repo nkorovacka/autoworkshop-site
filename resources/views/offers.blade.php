@@ -1,44 +1,8 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <title>Piedāvājumi un pasākumi - Auto Detailing Workshop</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-</head>
-<body>
-    <!-- Galvene ar navigāciju un lietotāja stāvokli -->
-    <header>
-        <nav>
-            <div class="logo">Auto Detailing</div>
-            <ul class="nav-links">
-                <li><a href="{{ route('home') }}">Galvenā</a></li>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}" class="active">Piedāvājumi</a></li>
-                <li><a href="{{ route('our-work') }}">Darbi</a></li>
-            </ul>
-            <div class="nav-right">
-                @auth
-                    <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                    <div class="auth-buttons signed-in">
-                        <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                        <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                            @csrf
-                            <button type="submit" class="btn-logout">Iziet</button>
-                        </form>
-                    </div>
-                @else
-                    <button class="icon-button" title="Profils">👤</button>
-                    <div class="auth-buttons">
-                        <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                        <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
-    </header>
+@extends('layouts.public')
+
+@section('title', 'Piedāvājumi un pasākumi - Auto Detailing Workshop')
+
+@section('content')
 
     <!-- Lapas virsraksts un īss ievads -->
     <div class="hero">
@@ -78,6 +42,7 @@
             <div class="offers-grid" id="offersGrid">
                 @foreach($offers as $offer)
                     @php
+                        $isRegistered = auth()->check() && in_array($offer->id, $registeredOfferIds ?? [], true);
                         $isFull = $offer->is_limited && $offer->capacity && $offer->registrations_count >= $offer->capacity;
                         $spotsPercent = $offer->is_limited && $offer->capacity
                             ? min(100, round($offer->registrations_count / $offer->capacity * 100))
@@ -91,15 +56,15 @@
                          data-format="{{ $offer->format ?? 'online' }}">
                         <div class="offer-header">
                             <div class="offer-meta">
-                                <span class="offer-type">🎥 Vebinārs</span>
+                                <span class="offer-type">Vebinārs</span>
                                 <span class="offer-format {{ ($offer->format ?? 'online') === 'in_person' ? 'in-person' : 'online' }}">
-                                    {{ ($offer->format ?? 'online') === 'in_person' ? '👥 Klātienē' : '💻 Tiešsaistē' }}
+                                    {{ ($offer->format ?? 'online') === 'in_person' ? 'Klātienē' : 'Tiešsaistē' }}
                                 </span>
                             </div>
                             <h3>{{ $offer->title }}</h3>
                             @if($eventDate)
                                 <div class="offer-date">
-                                    📅 {{ $eventDate }}
+                                    {{ $eventDate }}
                                 </div>
                             @endif
                         </div>
@@ -114,10 +79,20 @@
                                         {{ $offer->registrations_count }}/{{ $offer->capacity }} vietas
                                     </div>
                                 </div>
+                            @else
+                                <div class="offer-spots offer-spots-simple">
+                                    <div class="spots-text">
+                                        {{ $offer->registrations_count }} pieteikušies
+                                    </div>
+                                </div>
                             @endif
                         </div>
                         <div class="offer-footer">
-                            @auth
+                            @if($isRegistered)
+                                <button type="button" class="offer-btn webinar offer-btn-registered" disabled>
+                                    Jau pieteicies
+                                </button>
+                            @elseif(auth()->check())
                                 <button type="button"
                                         class="offer-btn webinar webinar-trigger"
                                         data-offer-id="{{ $offer->id }}"
@@ -152,7 +127,6 @@
                            id="modalName"
                            name="name"
                            value="@auth{{ auth()->user()->name }}@endauth"
-                           {{ auth()->check() ? 'readonly' : '' }}
                            required>
                 </div>
                 <div class="form-field">
@@ -161,7 +135,6 @@
                            id="modalEmail"
                            name="email"
                            value="@auth{{ auth()->user()->email }}@endauth"
-                           {{ auth()->check() ? 'readonly' : '' }}
                            required>
                 </div>
                 <button type="submit" class="modal-submit">Pieteikties</button>
@@ -169,46 +142,8 @@
         </div>
     </div>
 
-    <!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
-    <footer>
-        <div class="footer-wrapper">
-            <div class="footer-column">
-                <h4>Salons</h4>
-                <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-                <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-            </div>
-            <div class="footer-column">
-                <h4>Kontakti</h4>
-                <ul>
-                    <li>📞 +371 2000 0000</li>
-                    <li>✉️ info@detailing.lv</li>
-                    <li>WhatsApp & Telegram</li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Ātrās saites</h4>
-                <ul>
-                    <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                    <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                    <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                    <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Sekojiet mums</h4>
-                <ul>
-                    <li><a href="#">Instagram</a></li>
-                    <li><a href="#">Facebook</a></li>
-                    <li><a href="#">YouTube</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-        </div>
-    </footer>
-
     <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+@push('styles')
     <style>
         /* Globālā nullēšana un kastes modelis */
         * {
@@ -231,183 +166,6 @@
             line-height: 1.6;
             color: var(--ink);
             background: #fafafa;
-        }
-
-        /* Galvenes izkārtojums un navigācijas josla */
-        header {
-            background: white;
-            border-bottom: 1px solid #e8e8e8;
-            padding: 1.2rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        nav {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--ink);
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2.5rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #666;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--ink);
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .icon-button {
-            background: none;
-            border: none;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: #666;
-            transition: color 0.2s;
-        }
-
-        .icon-button:hover {
-            color: var(--ink);
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn-login {
-            padding: 0.5rem 1.2rem;
-            background: none;
-            border: 1px solid #e8e8e8;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--ink);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-login:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-signup {
-            padding: 0.5rem 1.2rem;
-            background: var(--ink);
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-signup:hover {
-            background: #333;
-        }
-
-        .auth-buttons.signed-in {
-            gap: 0.6rem;
-            align-items: center;
-        }
-
-        .logout-form {
-            margin: 0;
-        }
-
-        .btn-logout {
-            padding: 0.45rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            border: none;
-            background: #f1f1f1;
-            color: var(--ink);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-logout:hover {
-            background: #dfdfdf;
-        }
-
-        .auth-buttons.signed-in {
-            gap: 0.6rem;
-        }
-
-        .user-greeting {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--ink);
-            white-space: nowrap;
-        }
-
-        .btn-cart,
-        .btn-profile {
-            padding: 0.45rem 1.1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .btn-cart {
-            border: 1px solid #e8e8e8;
-            background: white;
-            color: var(--ink);
-        }
-
-        .btn-cart:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-profile {
-            border: none;
-            background: var(--ink);
-            color: white;
-        }
-
-        .btn-profile:hover {
-            background: #333;
         }
 
         /* Hero sadaļa ar virsrakstu un aprakstu */
@@ -471,7 +229,7 @@
 
         .offers-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 2rem;
         }
 
@@ -563,6 +321,10 @@
             margin-bottom: 1.5rem;
         }
 
+        .offer-spots.offer-spots-simple {
+            justify-content: flex-start;
+        }
+
         .spots-progress {
             flex: 1;
             height: 8px;
@@ -608,8 +370,18 @@
 
         .offer-btn:disabled {
             background: #ccc;
+            color: #666;
+            border-color: #ccc;
             cursor: not-allowed;
             transform: scale(1);
+        }
+
+        .offer-btn.offer-btn-registered,
+        .offer-btn.offer-btn-registered:hover,
+        .offer-btn.offer-btn-registered:disabled {
+            background: #e5e7eb;
+            color: #6b7280;
+            border-color: #e5e7eb;
         }
 
         .offer-btn.webinar {
@@ -746,25 +518,13 @@
         }
 
         /* Responsivitāte planšetēm un telefoniem */
+        @media (max-width: 1100px) {
+            .offers-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 968px) {
-            .nav-links {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1rem;
-            }
-
-            nav {
-                flex-direction: column;
-                gap: 0.8rem;
-            }
-
-            .nav-right {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
             .offers-grid {
                 grid-template-columns: 1fr;
             }
@@ -784,55 +544,10 @@
             }
         }
 
-        /* Kājenes izkārtojums */
-        footer {
-            background: white;
-            border-top: 1px solid #e8e8e8;
-            margin-top: 4rem;
-        }
-
-        .footer-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 2rem;
-            color: #555;
-        }
-
-        .footer-column h4 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15rem;
-            color: var(--ink);
-            margin-bottom: 1rem;
-        }
-
-        .footer-column ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .footer-column a {
-            text-decoration: none;
-            color: #666;
-        }
-
-        .footer-column a:hover {
-            color: var(--ink);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding: 1.5rem;
-            color: #777;
-            font-size: 0.9rem;
-            border-top: 1px solid #f0f0f0;
-        }
     </style>
+@endpush
+
+@push('scripts')
 <script>
         // Filtru pogu un piedāvājumu kartīšu references.
         const filterTabs = document.querySelectorAll('.filter-tab');
@@ -882,16 +597,29 @@
             email: @json(auth()->check() ? auth()->user()->email : null),
         };
 
+        function validateModalEmail() {
+            if (!modalEmail) {
+                return true;
+            }
+
+            const value = modalEmail.value.trim();
+            const isValid = value === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+            modalEmail.setCustomValidity(isValid ? '' : 'Nepareizs e-pasta formāts.');
+
+            return isValid;
+        }
+
         // Ielādē lietotāja datus modālajā formā (ja ir pieslēgts).
         function fillUserData() {
             if (modalName && currentUser.name) {
                 modalName.value = currentUser.name;
-                modalName.readOnly = true;
             }
             if (modalEmail && currentUser.email) {
                 modalEmail.value = currentUser.email;
-                modalEmail.readOnly = true;
             }
+
+            validateModalEmail();
         }
         fillUserData();
 
@@ -922,6 +650,14 @@
                 closeModal();
             }
         });
+
+        modalEmail?.addEventListener('input', validateModalEmail);
+        modalEmail?.addEventListener('invalid', () => {
+            validateModalEmail();
+        });
+        registrationForm?.addEventListener('submit', () => {
+            validateModalEmail();
+        });
 </script>
-</body>
-</html>
+@endpush
+@endsection

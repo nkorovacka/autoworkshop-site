@@ -1,44 +1,8 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $product->name }} – produkta apraksts</title>
-    
-</head>
-<body>
-<!-- Galvene ar navigāciju un lietotāja stāvokli -->
-<header>
-    <nav>
-        <div class="logo">Auto Detailing</div>
-        <ul class="nav-links">
-            <li><a href="{{ route('home') }}">Galvenā</a></li>
-            <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-            <li><a href="{{ route('products.index') }}" class="active">Produkti</a></li>
-            <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-            <li><a href="{{ route('our-work') }}">Darbi</a></li>
-        </ul>
-        <div class="nav-right">
-            @auth
-                <div class="user-greeting">Sveiki, {{ auth()->user()->name }}</div>
-                <div class="auth-buttons signed-in">
-                    <a class="btn-cart" href="{{ route('cart.index') }}">🛒 Grozs</a>
-                    <a class="btn-profile" href="{{ route('profile') }}">👤 Profils</a>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit" class="btn-logout">Iziet</button>
-                    </form>
-                </div>
-            @else
-                <button class="icon-button" title="Profils">👤</button>
-                <div class="auth-buttons">
-                    <a class="btn-login" href="{{ route('login') }}">Ieiet</a>
-                    <a class="btn-signup" href="{{ route('register') }}">Reģistrēties</a>
-                </div>
-            @endauth
-        </div>
-    </nav>
-</header>
+@extends('layouts.public')
+
+@section('title', $product->name . ' – produkta apraksts')
+
+@section('content')
 
 <main>
     <!-- Produkta virsraksts un īss ievads -->
@@ -143,45 +107,8 @@
     <a class="back-link" href="{{ route('products.index') }}">&larr; Atpakaļ uz produktu sarakstu</a>
 </main>
 
-<!-- Kājenes informācija ar kontaktiem un ātrajām saitēm -->
-<footer>
-    <div class="footer-wrapper">
-        <div class="footer-column">
-            <h4>Salons</h4>
-            <p>Auto Detailing Workshop<br>Brīvības iela 123, Rīga</p>
-            <p>Darba laiks:<br>Pirmdiena-Piektdiena 9:00-19:00<br>Brīvdienās nestrādājam</p>
-        </div>
-        <div class="footer-column">
-            <h4>Kontakti</h4>
-            <ul>
-                <li>📞 +371 2000 0000</li>
-                <li>✉️ info@detailing.lv</li>
-                <li>WhatsApp & Telegram</li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Ātrās saites</h4>
-            <ul>
-                <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
-                <li><a href="{{ route('products.index') }}">Produkti</a></li>
-                <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>Sekojiet mums</h4>
-            <ul>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
-    </div>
-</footer>
 <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
+@push('styles')
 <style>
         /* Globālā nullēšana un kastes modelis */
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -196,29 +123,6 @@
         }
         /* Pamatteksts un fons */
         body { font-family:"Inter", Arial, sans-serif; background:#f7f7f7; color:var(--ink); line-height:1.6; }
-        /* Galvene un navigācija */
-        header { background:white; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
-        nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-        .logo { font-weight:600; letter-spacing:-0.5px; font-size:1.15rem; }
-        .nav-links { list-style:none; display:flex; gap:1.8rem; }
-        .nav-links a { text-decoration:none; color:var(--muted); font-weight:500; transition:color 0.2s; }
-        .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-        .nav-right { display:flex; align-items:center; gap:1.2rem; }
-        .icon-button { background:none; border:none; font-size:1.2rem; color:var(--muted); cursor:pointer; }
-        .auth-buttons { display:flex; gap:0.8rem; }
-        .auth-buttons.signed-in { gap:0.6rem; }
-        .btn-login, .btn-signup { padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
-        .btn-login { border:1px solid var(--border); background:none; }
-        .btn-login:hover { background:#f5f5f5; }
-        .btn-signup { border:none; background:var(--ink); color:white; }
-        .btn-profile { border:none; background:var(--ink); color:white; padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
-        .btn-profile:hover { background:#333; }
-        .btn-cart { border:1px solid var(--border); background:white; color:var(--ink); padding:0.45rem 1.1rem; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
-        .btn-cart:hover { background:#f5f5f5; }
-        .user-greeting { font-size:0.85rem; font-weight:600; color:var(--ink); white-space:nowrap; }
-        .logout-form { margin:0; }
-        .btn-logout { border:none; background:#f1f1f1; color:#1a1a1a; padding:0.45rem 1rem; border-radius:8px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.2s; }
-        .btn-logout:hover { background:#dfdfdf; }
         /* Pogas grozam un daudzuma ievade */
         .btn-add-cart { margin-top:0.5rem; padding:0.9rem 1.5rem; border-radius:12px; border:none; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; background:var(--ink); color:white; text-decoration:none; }
         .btn-add-cart.disabled { background:#e0e0e0; color:#777; cursor:not-allowed; }
@@ -255,22 +159,11 @@
 
         .back-link { display:inline-flex; align-items:center; gap:0.4rem; margin-top:2.5rem; text-decoration:none; color:var(--accent); font-weight:600; }
 
-        /* Kājenes izkārtojums */
-        footer { background:white; border-top:1px solid #e8e8e8; margin-top:4rem; }
-        .footer-wrapper { max-width:1400px; margin:0 auto; padding:3rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; color:#555; }
-        .footer-column h4 { font-size:1rem; text-transform:uppercase; letter-spacing:0.15rem; color:var(--ink); margin-bottom:1rem; }
-        .footer-column ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-        .footer-column a { text-decoration:none; color:#666; }
-        .footer-column a:hover { color:var(--ink); }
-        .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
-
         /* Responsivitāte mazākiem ekrāniem */
         @media(max-width:680px){
-            nav { flex-direction:column; gap:0.8rem; }
-            .nav-links { flex-wrap:wrap; justify-content:center; }
             .product-card { padding:1.5rem; }
             .image-frame { height:240px; }
         }
     </style>
-</body>
-</html>
+@endpush
+@endsection

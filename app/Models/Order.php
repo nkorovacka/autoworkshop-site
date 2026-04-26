@@ -25,8 +25,6 @@ class Order extends Model
         'shipping_address',
         'payment_method',
         'card_holder',
-        'card_last4',
-        'items_summary',
         'notes',
     ];
 
