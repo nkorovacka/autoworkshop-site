@@ -16,8 +16,13 @@ class AuthController extends Controller
     /**
      * Parāda pieteikšanās formu.
      */
-    public function showLoginForm(): View
+    public function showLoginForm(Request $request): View
     {
+        $redirect = $request->query('redirect');
+        if ($redirect && str_starts_with($redirect, '/')) {
+            $request->session()->put('url.intended', $redirect);
+        }
+
         return view('auth.login');
     }
 

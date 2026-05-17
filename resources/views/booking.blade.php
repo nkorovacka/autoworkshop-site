@@ -40,7 +40,9 @@
                     <!-- Personas dati -->
                     <div class="form-section">
                         <h3 class="section-title">
-                            <span class="section-icon">👤</span>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm-7 18a7 7 0 0 1 14 0H5Z"/></svg>
+                            </span>
                             Tava informācija
                         </h3>
                         @auth
@@ -68,7 +70,9 @@
                     <!-- Auto informācija -->
                     <div class="form-section">
                         <h3 class="section-title">
-                            <span class="section-icon">🚗</span>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M5.5 14.5h13l1.1-4.4a2 2 0 0 0-2-2.6h-0.4l-0.4-1.2A2 2 0 0 0 14.8 6H9.2a2 2 0 0 0-1.9 1.3L6.9 8H6.5a2 2 0 0 0-2 2.6l1.1 4.4Zm3.5-3.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></svg>
+                            </span>
                             Auto informācija
                         </h3>
                         <div class="form-grid">
@@ -140,7 +144,9 @@
                     @endphp
                     <div class="form-section">
                         <h3 class="section-title">
-                            <span class="section-icon">📅</span>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 2h1v2h8V2h1a2 2 0 0 1 2 2v2H5V4a2 2 0 0 1 2-2Zm-2 7h14v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9Zm2 2v2h2v-2H7Zm4 0v2h2v-2h-2Zm4 0v2h2v-2h-2Z"/></svg>
+                            </span>
                             Datums un laiks
                         </h3>
                         <div class="form-grid">
@@ -165,15 +171,20 @@
                                 <small style="color:#777;">Pieejami laiki darba dienās: 9:00, 11:00, 13:00, 15:00, 17:00 un 19:00.</small>
                             </div>
                         </div>
-                        <div class="info-box">
-                            💡 Ieteicams rezervēt vismaz 2 dienas iepriekš. Darba laiks: Pirmdiena-Piektdiena 9:00-19:00 (brīvdienās slēgts).
+                        <div class="info-box" style="display:flex; align-items:flex-start; gap:0.75rem;">
+                            <span class="info-mark" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z"/></svg>
+                            </span>
+                            <span>Ieteicams rezervēt vismaz 2 dienas iepriekš. Darba laiks: Pirmdiena-Piektdiena 9:00-19:00 (brīvdienās slēgts).</span>
                         </div>
                     </div>
 
                     <!-- Pakalpojumu izvēle -->
                     <div class="form-section">
                         <h3 class="section-title">
-                            <span class="section-icon">✨</span>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2l1.72 4.95L19 8.27l-4.2 3.16L15.4 17 12 13.97 8.6 17l0.6-5.57L5 8.27l5.28-.32L12 2Z"/></svg>
+                            </span>
                             Izvēlies pakalpojumus
                         </h3>
                         @php
@@ -194,15 +205,20 @@
                                            data-name="{{ $service->name }}"
                                            @checked(in_array((string) $service->id, $oldServices, true))>
                                     <label for="{{ $inputId }}" class="service-label">
-                                        <div class="icon">{{ $service->icon ?? '✨' }}</div>
+                                        <div class="icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2.5c-1.9 0-3.5 1.6-3.5 3.5S10.1 9.5 12 9.5s3.5-1.6 3.5-3.5S13.9 2.5 12 2.5Zm0 14.5c-3.9 0-7-3.1-7-7 0-1.8.7-3.4 1.9-4.6 0 0 1.1-1.1 2.9-1.1 1.7 0 2.9 1.1 2.9 1.1C15.3 6.6 16 8.2 16 10c0 3.9-3.1 7-7 7Zm0-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>
+                                        </div>
                                         <div class="name">{{ $service->name }}</div>
                                         <div class="price">no €{{ number_format($service->base_price, 0) }}</div>
                                     </label>
                                 </div>
                             @endforeach
                         </div>
-                        <div class="info-box" style="margin-top: 1rem;">
-                            💡 Pilns detailing komplekts un VIP programma ir pilni pakalpojumu komplekti, tāpēc tos nevar apvienot ar citiem pakalpojumiem.
+                        <div class="info-box" style="margin-top: 1rem; display:flex; align-items:flex-start; gap:0.75rem;">
+                            <span class="info-mark" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm2.5 11h-5v-1.5h1.5V13H9V11h3v5.5h1.5V16H14.5v1.5Z"/></svg>
+                            </span>
+                            <span>Pilns detailing komplekts un VIP programma ir pilni pakalpojumu komplekti, tāpēc tos nevar apvienot ar citiem pakalpojumiem.</span>
                         </div>
                     </div>
                 </form>
@@ -248,8 +264,11 @@
                         Rezervēt vizīti
                     </button>
 
-                    <div class="info-box" style="margin-top: 1rem;">
-                        ℹ️ Precīza cena tiks apstiprināta pēc auto apskates
+                    <div class="info-box" style="margin-top: 1rem; display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span class="info-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z"/></svg>
+                        </span>
+                        <span>Precīza cena tiks apstiprināta pēc auto apskates</span>
                     </div>
                 </div>
             </div>
@@ -394,6 +413,7 @@
 
         .service-option {
             position: relative;
+            height: 100%;
         }
 
         .service-option input {
@@ -401,7 +421,10 @@
         }
 
         .service-label {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 170px;
             padding: 1.2rem;
             border: 2px solid #e8e8e8;
             border-radius: 12px;
@@ -416,8 +439,14 @@
         }
 
         .service-label .icon {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 0.75rem;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: #f5f5f7;
+            color: var(--accent);
         }
 
         .service-label .name {

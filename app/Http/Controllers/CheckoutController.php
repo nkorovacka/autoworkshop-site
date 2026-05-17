@@ -73,7 +73,6 @@ class CheckoutController extends Controller
                     }
                 },
             ],
-            'card_holder' => ['required','max:255','regex:/^[\pL\s\'\-]+$/u'],
             'card_number' => 'required|digits_between:13,19',
             'card_expiry' => ['required', 'regex:/^(0[1-9]|1[0-2])\\/([0-9]{2})$/'],
             'card_cvc'    => 'required|digits_between:3,4',
@@ -138,7 +137,7 @@ class CheckoutController extends Controller
                 'shipping_method' => $data['shipping_method'],
                 'shipping_address' => $data['shipping_method'] === 'delivery' ? $data['shipping_address'] : null,
                 'payment_method' => 'card',
-                'card_holder' => $data['card_holder'],
+                'card_holder' => $data['customer_name'] ?? optional(auth()->user())->name ?? 'Nezināms klients',
                 'notes' => $data['notes'] ?? null,
             ];
 

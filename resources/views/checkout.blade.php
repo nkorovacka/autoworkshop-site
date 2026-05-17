@@ -66,10 +66,6 @@
                 </div>
                 <!-- Kartes dati -->
                 <div class="form-group">
-                    <label for="card_holder">Kartes īpašnieks</label>
-                    <input type="text" id="card_holder" name="card_holder" value="{{ old('card_holder') }}" required>
-                </div>
-                <div class="form-group">
                     <label for="card_number">Kartes numurs</label>
                     <input type="text" id="card_number" name="card_number" inputmode="numeric" value="{{ old('card_number') }}" required>
                 </div>
@@ -155,14 +151,14 @@
     body { font-family:"Inter", Arial, sans-serif; background:#f7f7f7; color:var(--ink); line-height:1.6; }
     /* Galvene un navigācija */
     header { background:white; border-bottom:1px solid var(--border); }
-    nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+    nav { max-width:1400px; margin:0 auto; padding:1.2rem 2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; }
     .logo { font-weight:600; letter-spacing:-0.5px; font-size:1.15rem; }
-    .nav-links { list-style:none; display:flex; gap:1.8rem; }
+    .nav-links { list-style:none; display:flex; gap:1.8rem; flex-wrap: wrap; }
     .nav-links a { text-decoration:none; color:var(--muted); font-weight:500; transition:color 0.2s; }
     .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-    .nav-right { display:flex; align-items:center; gap:1.2rem; }
-    .auth-buttons { display:flex; gap:0.6rem; }
-    .btn-cart, .btn-profile, .btn-logout { padding:0.45rem 1.1rem; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:500; }
+    .nav-right { display:flex; align-items:center; gap:1.2rem; flex-wrap: wrap; }
+    .auth-buttons { display:flex; gap:0.6rem; flex-wrap: wrap; }
+    .btn-cart, .btn-profile, .btn-logout { padding:0.45rem 1.1rem; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:500; min-width:0; }
     .btn-icon { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
     .btn-cart { border:1px solid var(--border); background:white; color:var(--ink); }
     .btn-profile { border:none; background:var(--ink); color:white; }
@@ -204,6 +200,11 @@
     .footer-bottom { text-align:center; padding:1.5rem; color:#777; font-size:0.9rem; border-top:1px solid #f0f0f0; }
     /* Responsivitāte mazākiem ekrāniem */
     @media(max-width:900px){
+        nav { justify-content:center; gap:1rem; }
+        .nav-links { justify-content:center; width:100%; }
+        .nav-right { width:100%; justify-content:center; gap:0.75rem; }
+        main { padding:2rem 1rem 2.5rem; }
+        .footer-wrapper { padding:2rem 1rem; }
         .checkout-grid { grid-template-columns:1fr; }
         .form-row { flex-direction:column; }
     }

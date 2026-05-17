@@ -152,6 +152,15 @@
     /* Paziņojumu (flash) izskats */
     .flash { padding:0.9rem 1rem; border-radius:12px; font-weight:600; }
     .flash-success { background:#e6f5ef; color:#136b3a; border:1px solid #b7e2c9; }
+
+    /* Hide default pagination summary text and large arrow icons in admin pages */
+    nav[role="navigation"] > div:first-child,
+    nav[role="navigation"] p.text-sm {
+        display: none !important;
+    }
+    nav[role="navigation"] svg {
+        display: none !important;
+    }
 </style>
 </body>
 </html>

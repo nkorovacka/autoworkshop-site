@@ -28,12 +28,11 @@ class OfferController extends Controller
         $registeredOfferIds = auth()->check()
             ? OfferRegistration::where('user_id', auth()->id())->pluck('offer_id')->all()
             : [];
-
         return view('offers', compact('offers', 'registeredOfferIds'));
     }
 
     /**
-     * Reģistrē lietotāju vebināram/pasākumam (tikai "webinar" tipa piedāvājumiem).
+     * Reģistrē lietotāju vebināram/pasākumam.
      */
     public function signup(Request $request, Offer $offer)
     {

@@ -251,6 +251,13 @@
     .status-pill.processing { background:#e0ecff; color:#1d4ed8; }
     .status-pill.completed { background:#e6f5ef; color:#136b3a; }
     .status-pill.cancelled { background:#fdecea; color:#b5302c; }
+
+    /* Hide pagination summary text and arrow icons in admin product/orders page */
+    nav[role="navigation"] > div:first-child,
+    nav[role="navigation"] p.text-sm,
+    nav[role="navigation"] svg {
+        display: none !important;
+    }
 </style>
 </body>
 </html>

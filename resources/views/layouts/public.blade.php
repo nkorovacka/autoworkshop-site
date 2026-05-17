@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Auto Detailing Workshop')</title>
     <style>
+        :root {
+            color-scheme: light;
+            color: var(--ink, #1a1a1a);
+            background: var(--bg, #f7f2eb);
+            --bg: #f7f2eb;
+            --surface: #ffffff;
+            --surface-strong: #ffffff;
+            --ink: #1a1a1a;
+            --muted: #666666;
+            --border: #f4ddd2;
+            --footer: #fff7f2;
+            --button-surface: #ffffff;
+            --button-border: #e8e8e8;
+        }
+
         html {
             scrollbar-gutter: stable;
             overflow-y: scroll;
@@ -14,14 +29,31 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background: var(--bg);
+            color: var(--ink);
+            min-width: 0;
+        }
+
+        img,
+        picture,
+        video,
+        canvas,
+        svg,
+        iframe {
+            max-width: 100%;
+            height: auto;
+        }
+
+        * {
+            min-width: 0;
         }
 
         .site-header {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: #fff7f2;
-            border-bottom: 1px solid #f4ddd2;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             font-family: "Inter", Arial, sans-serif;
         }
 
@@ -90,13 +122,13 @@
         .site-icon-button {
             width: 34px;
             height: 34px;
-            border: 1px solid #ead8cf;
+            border: 1px solid var(--border);
             border-radius: 999px;
             color: var(--muted, #666);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: #fff;
+            background: var(--surface);
             line-height: 1;
         }
 
@@ -139,8 +171,8 @@
 
         .site-btn-login,
         .site-btn-cart {
-            background: #fff;
-            border-color: #e8e8e8;
+            background: var(--button-surface);
+            border-color: var(--button-border);
         }
 
         .site-btn-login:hover,
@@ -164,11 +196,12 @@
         }
 
         .site-btn-logout {
-            background: #f1f1f1;
+            background: var(--button-surface);
+            border-color: var(--button-border);
         }
 
         .site-btn-logout:hover {
-            background: #dfdfdf;
+            background: var(--surface-strong);
         }
 
         .site-logout-form {
@@ -212,7 +245,7 @@
 
         .footer-column a {
             text-decoration: none;
-            color: #666;
+            color: var(--muted);
         }
 
         .footer-column a:hover {
@@ -222,26 +255,80 @@
         .footer-bottom {
             text-align: center;
             padding: 1.5rem;
-            color: #777;
+            color: var(--muted);
             font-size: 0.9rem;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border);
         }
 
         @media (max-width: 900px) {
             .site-nav {
                 flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                padding: 1rem 1rem;
+            }
+
+            .site-logo {
+                font-size: 1.05rem;
+                text-align: center;
+                width: 100%;
             }
 
             .site-nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 1rem;
+                gap: 0.85rem;
+                padding: 0.25rem 0;
+            }
+
+            .site-nav-links a {
+                padding: 0.45rem 0.5rem;
+                border-radius: 8px;
             }
 
             .site-nav-right {
                 width: 100%;
                 justify-content: center;
                 flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .site-auth-buttons,
+            .site-auth-buttons.site-auth-buttons-signed-in {
+                justify-content: center;
+            }
+
+            .site-btn {
+                white-space: normal;
+                padding: 0.55rem 0.9rem;
+            }
+
+            .site-icon-button {
+                margin: 0 auto;
+            }
+
+            .footer-wrapper {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 2rem 1rem;
+            }
+
+            .site-footer {
+                padding-bottom: 1rem;
+            }
+
+            .footer-bottom {
+                padding: 1rem 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .site-nav {
+                padding: 1rem 0.75rem;
+            }
+
+            .footer-wrapper {
+                padding: 1.5rem 0.75rem;
             }
         }
     </style>
@@ -254,9 +341,7 @@
         @yield('content')
     </div>
 
-    @unless (request()->routeIs('login') || request()->routeIs('register'))
-        @include('partials.public-footer')
-    @endunless
+    @include('partials.public-footer')
 
     @stack('scripts')
 </body>

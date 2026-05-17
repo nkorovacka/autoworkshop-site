@@ -12,7 +12,11 @@
                 <h1>Atdzīvini sava auto izskatu ar profesionālu kopšanu</h1>
                 <p>Mēs piedāvājam pilnu auto detaļu kopšanas spektru — no rūpīgas mazgāšanas līdz keramiskajai aizsardzībai. Viss, lai Tavs auto izskatītos un justos nevainojami katru dienu.</p>
                 <div class="hero-buttons">
-                    <a href="/booking" class="btn-primary">Rezervēt vizīti</a>
+                    @guest
+                        <a href="{{ route('login', ['redirect' => '/booking']) }}" class="btn-primary">Rezervēt vizīti</a>
+                    @else
+                        <a href="/booking" class="btn-primary">Rezervēt vizīti</a>
+                    @endguest
                     <a href="/services" class="btn-secondary">Apskatīt pakalpojumus</a>
                 </div>
             </div>
@@ -170,7 +174,11 @@
     <div class="cta-section">
         <h2>Vai Tavs auto gatavs atjaunot izskatu?</h2>
         <p>Rezervē vizīti tiešsaistē un saņem personalizētu piedāvājumu ar precīzu cenu.</p>
-        <a href="/booking" class="btn-cta">Rezervēt vizīti →</a>
+        @guest
+            <a href="{{ route('login', ['redirect' => '/booking']) }}" class="btn-cta">Rezervēt vizīti →</a>
+        @else
+            <a href="/booking" class="btn-cta">Rezervēt vizīti →</a>
+        @endguest
     </div>
 
     <!-- Darbu galerija, ja ir pieejami darbi -->

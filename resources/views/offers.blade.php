@@ -56,7 +56,6 @@
                          data-format="{{ $offer->format ?? 'online' }}">
                         <div class="offer-header">
                             <div class="offer-meta">
-                                <span class="offer-type">Vebinārs</span>
                                 <span class="offer-format {{ ($offer->format ?? 'online') === 'in_person' ? 'in-person' : 'online' }}">
                                     {{ ($offer->format ?? 'online') === 'in_person' ? 'Klātienē' : 'Tiešsaistē' }}
                                 </span>
@@ -99,7 +98,7 @@
                                         data-offer-title="{{ $offer->title }}"
                                         data-offer-action="{{ route('offers.signup', $offer) }}"
                                         {{ $isFull ? 'disabled' : '' }}>
-                                    {{ $isFull ? 'Pilns' : 'Pieteikties vebināram' }}
+                                    {{ $isFull ? 'Pilns' : 'Pieteikties' }}
                                 </button>
                             @else
                                 <a class="offer-btn webinar" href="{{ route('login') }}">

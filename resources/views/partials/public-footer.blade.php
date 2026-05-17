@@ -19,7 +19,13 @@
                 <li><a href="{{ route('services.index') }}">Pakalpojumi</a></li>
                 <li><a href="{{ route('products.index') }}">Produkti</a></li>
                 <li><a href="{{ route('offers.index') }}">Piedāvājumi</a></li>
-                <li><a href="{{ route('booking.create') }}">Rezervēt vizīti</a></li>
+                <li>
+                    @guest
+                        <a href="{{ route('login', ['redirect' => '/booking']) }}">Rezervēt vizīti</a>
+                    @else
+                        <a href="{{ route('booking.create') }}">Rezervēt vizīti</a>
+                    @endguest
+                </li>
             </ul>
         </div>
         <div class="footer-column">
@@ -30,8 +36,5 @@
                 <li><a href="#">YouTube</a></li>
             </ul>
         </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; {{ date('Y') }} Auto Detailing Workshop. Visas tiesības aizsargātas.
     </div>
 </footer>

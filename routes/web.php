@@ -109,8 +109,8 @@ Route::get('/our-work', function () {
 |--------------------------------------------------------------------------
 */
 // Rezervācijas forma un saglabāšana
-Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
-Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::get('/booking', [BookingController::class, 'create'])->name('booking.create')->middleware('auth');
+Route::post('/booking', [BookingController::class, 'store'])->name('booking.store')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------

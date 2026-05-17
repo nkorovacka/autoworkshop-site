@@ -42,7 +42,7 @@
             @auth
                 <button onclick="location.href='{{ route('booking.create', ['service' => $service->slug]) }}'">Pieteikties</button>
             @else
-                <button onclick="location.href='{{ route('login') }}'">Ieiet, lai pieteiktos</button>
+                <button onclick="location.href='{{ route('login', ['redirect' => '/booking?service=' . $service->slug]) }}'">Ieiet, lai pieteiktos</button>
             @endauth
         </article>
     @endforeach
@@ -53,7 +53,11 @@
 <section class="cta">
     <h2>Kuru pakalpojumu izvēlies?</h2>
     <p>Aizpildi pieteikumu un saņem apstiprinājumu dažu minūšu laikā.</p>
-    <a href="{{ route('booking.create') }}">Rezervēt tiešsaistē</a>
+    @guest
+        <a href="{{ route('login', ['redirect' => '/booking']) }}">Rezervēt tiešsaistē</a>
+    @else
+        <a href="{{ route('booking.create') }}">Rezervēt tiešsaistē</a>
+    @endguest
 </section>
 
 <!-- Iekšējais CSS: novietots pēc HTML, lai atdalītu struktūru no noformējuma -->
