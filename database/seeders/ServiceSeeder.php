@@ -12,7 +12,7 @@ class ServiceSeeder extends Seeder
      */
     public function run(): void
     {
-        Service::truncate();
+        Service::query()->delete();
 
         $services = [
             [
