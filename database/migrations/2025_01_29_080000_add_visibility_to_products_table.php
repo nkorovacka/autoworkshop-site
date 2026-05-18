@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             if (!Schema::hasColumn('products', 'is_visible')) {
-                $table->boolean('is_visible')->default(true)->after('stock');
+                $table->boolean('is_visible')->default(true);
             }
         });
     }
