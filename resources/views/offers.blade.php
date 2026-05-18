@@ -96,7 +96,7 @@
                                         class="offer-btn webinar webinar-trigger"
                                         data-offer-id="{{ $offer->id }}"
                                         data-offer-title="{{ $offer->title }}"
-                                        data-offer-action="{{ route('offers.signup', $offer) }}"
+                                        data-offer-action="{{ secure_url(route('offers.signup', $offer, false)) }}"
                                         {{ $isFull ? 'disabled' : '' }}>
                                     {{ $isFull ? 'Pilns' : 'Pieteikties' }}
                                 </button>
