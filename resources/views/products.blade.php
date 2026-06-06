@@ -158,7 +158,8 @@
             box-shadow:0 0 0 3px rgba(255,92,53,0.15);
         }
         /* Produktu režģis */
-        .products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.2rem; }
+        .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.2rem; }
+        .products-grid .product-card { max-width:360px; }
         .product-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.3rem; display:flex; flex-direction:column; gap:0.6rem; }
         .product-image { width:100%; height:180px; border-radius:12px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:0.85rem; color:#999; overflow:hidden; cursor:pointer; }
         .product-image img { width:100%; height:100%; object-fit:cover; }

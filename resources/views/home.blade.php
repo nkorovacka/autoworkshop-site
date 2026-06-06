@@ -795,11 +795,12 @@
 
         .work-grid {
             display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
             gap:1.4rem;
         }
 
         .work-card {
+            max-width:360px;
             background:white;
             border-radius:20px;
             border:1px solid #f0f0f0;

@@ -87,9 +87,9 @@
         .hero h1 { font-size:2.8rem; margin-bottom:0.5rem; }
         .hero p { color:var(--muted); max-width:700px; margin:0 auto; }
         /* Darbu režģis */
-        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
         /* Darbu kartītes izskats un ēnojums */
-        .work-card { background:white; border:1px solid #f0f0f0; border-radius:20px; padding:1.5rem; box-shadow:0 15px 35px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
+        .work-card { max-width:380px; background:white; border:1px solid #f0f0f0; border-radius:20px; padding:1.5rem; box-shadow:0 15px 35px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
         .card-title { font-size:1.2rem; }
         /* Slider elements */
         /* Slaidera rāmis ar fiksētu augstumu */
