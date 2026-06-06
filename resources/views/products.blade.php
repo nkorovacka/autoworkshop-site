@@ -47,7 +47,7 @@
                     <!-- Produkta attēls ar klikšķi uz detaļu lapu -->
                     <div class="product-image" onclick="window.location='{{ route('products.show', $product) }}'">
                         @if($product->image)
-                            <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
+                            <img src="{{ asset('images/uploads/'.$product->image) }}" alt="{{ $product->name }}">
                         @else
                             <span>Attēls tiks pievienots</span>
                         @endif

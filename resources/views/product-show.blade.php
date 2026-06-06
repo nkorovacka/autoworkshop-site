@@ -28,7 +28,7 @@
         <div class="product-media">
             <div class="image-frame" onclick="window.location='{{ route('products.show', $product) }}'">
                 @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
+                    <img src="{{ asset('images/uploads/'.$product->image) }}" alt="{{ $product->name }}">
                 @else
                     <span>Produkta attēls tiks pievienots</span>
                 @endif

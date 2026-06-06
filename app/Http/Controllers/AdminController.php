@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -158,7 +160,7 @@ class AdminController extends Controller
         // Saglabā attēlu, ja tas ir augšupielādēts.
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = $this->storePublicImage($request->file('image'), 'products');
         }
 
         // Izveido jaunu produktu ar noklusējuma redzamību.
@@ -202,9 +204,9 @@ class AdminController extends Controller
         // Ja pievienots jauns attēls, dzēš veco un saglabā jauno.
         if ($request->hasFile('image')) {
             if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                $this->deletePublicImage($product->image);
             }
-            $payload['image'] = $request->file('image')->store('products', 'public');
+            $payload['image'] = $this->storePublicImage($request->file('image'), 'products');
         }
 
         // Saglabā izmaiņas datubāzē.
@@ -233,7 +235,7 @@ class AdminController extends Controller
     {
         // Noņem attēla failu, lai nepaliek lieki resursi.
         if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+            $this->deletePublicImage($product->image);
         }
 
         // Dzēš produktu no datubāzes.
@@ -476,10 +478,10 @@ class AdminController extends Controller
 
         // Saglabā "pirms" un "pēc" attēlus, ja tie pievienoti.
         if ($request->hasFile('before_image')) {
-            $payload['before_image'] = $request->file('before_image')->store('work-items', 'public');
+            $payload['before_image'] = $this->storePublicImage($request->file('before_image'), 'work-items');
         }
         if ($request->hasFile('after_image')) {
-            $payload['after_image'] = $request->file('after_image')->store('work-items', 'public');
+            $payload['after_image'] = $this->storePublicImage($request->file('after_image'), 'work-items');
         }
 
         // Izveido jaunu darba vienumu.
@@ -516,15 +518,15 @@ class AdminController extends Controller
         // Nomaina "pirms" attēlu, dzēšot veco failu.
         if ($request->hasFile('before_image')) {
             if ($workItem->before_image) {
-                Storage::disk('public')->delete($workItem->before_image);
+                $this->deletePublicImage($workItem->before_image);
             }
-            $payload['before_image'] = $request->file('before_image')->store('work-items', 'public');
+            $payload['before_image'] = $this->storePublicImage($request->file('before_image'), 'work-items');
         }
         if ($request->hasFile('after_image')) {
             if ($workItem->after_image) {
-                Storage::disk('public')->delete($workItem->after_image);
+                $this->deletePublicImage($workItem->after_image);
             }
-            $payload['after_image'] = $request->file('after_image')->store('work-items', 'public');
+            $payload['after_image'] = $this->storePublicImage($request->file('after_image'), 'work-items');
         }
 
         // Saglabā izmaiņas datubāzē.
@@ -540,15 +542,39 @@ class AdminController extends Controller
     {
         // Dzēš attēlus, ja tie eksistē, lai neatstātu liekus failus.
         if ($workItem->before_image) {
-            Storage::disk('public')->delete($workItem->before_image);
+            $this->deletePublicImage($workItem->before_image);
         }
         if ($workItem->after_image) {
-            Storage::disk('public')->delete($workItem->after_image);
+            $this->deletePublicImage($workItem->after_image);
         }
 
         // Dzēš vienumu no datubāzes.
         $workItem->delete();
 
         return back()->with('success', 'Darbs dzēsts.');
+    }
+
+    /**
+     * Saglabā publiski pieejamu attēlu bez Laravel storage symlink prasības.
+     */
+    protected function storePublicImage(UploadedFile $file, string $directory): string
+    {
+        $targetDirectory = public_path('images/uploads/'.$directory);
+
+        File::ensureDirectoryExists($targetDirectory);
+
+        $filename = $file->hashName();
+        $file->move($targetDirectory, $filename);
+
+        return $directory.'/'.$filename;
+    }
+
+    /**
+     * Dzēš attēlu no jaunās publiskās mapes un arī no vecās storage vietas, ja tāds tur palicis.
+     */
+    protected function deletePublicImage(string $path): void
+    {
+        File::delete(public_path('images/uploads/'.$path));
+        Storage::disk('public')->delete($path);
     }
 }

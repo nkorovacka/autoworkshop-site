@@ -93,14 +93,14 @@
                             <div>
                                 <p style="margin:0 0 0.3rem;">Foto pirms</p>
                                 @if($item->before_image)
-                                    <img src="{{ asset('storage/'.$item->before_image) }}" alt="Pirms" style="width:100px; height:100px; object-fit:cover; border-radius:8px;">
+                                    <img src="{{ asset('images/uploads/'.$item->before_image) }}" alt="Pirms" style="width:100px; height:100px; object-fit:cover; border-radius:8px;">
                                 @endif
                                 <input type="file" name="before_image" accept="image/*">
                             </div>
                             <div>
                                 <p style="margin:0 0 0.3rem;">Foto pēc</p>
                                 @if($item->after_image)
-                                    <img src="{{ asset('storage/'.$item->after_image) }}" alt="Pēc" style="width:100px; height:100px; object-fit:cover; border-radius:8px;">
+                                    <img src="{{ asset('images/uploads/'.$item->after_image) }}" alt="Pēc" style="width:100px; height:100px; object-fit:cover; border-radius:8px;">
                                 @endif
                                 <input type="file" name="after_image" accept="image/*">
                             </div>

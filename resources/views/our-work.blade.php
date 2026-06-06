@@ -28,10 +28,10 @@
                 <!-- Slaideris ar "pirms" un "pēc" attēliem -->
                 <div class="slider"
                      data-images='@json([
-                        $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
-                        $item->after_image ? asset("storage/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
+                        $item->before_image ? asset("images/uploads/".$item->before_image) : asset("images/our-work/placeholder-before.jpg"),
+                        $item->after_image ? asset("images/uploads/".$item->after_image) : asset("images/our-work/placeholder-after.jpg")
                      ])'>
-                    <img src="{{ $item->before_image ? asset("storage/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
+                    <img src="{{ $item->before_image ? asset("images/uploads/".$item->before_image) : asset("images/our-work/placeholder-before.jpg") }}" alt="{{ $item->title }} foto">
                     <button class="prev" type="button" aria-label="Iepriekšējais">&lt;</button>
                     <button class="next" type="button" aria-label="Nākamais">&gt;</button>
                 </div>

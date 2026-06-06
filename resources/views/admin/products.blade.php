@@ -107,7 +107,7 @@
                                 <div>
                                     <!-- Esošā attēla priekšskatījums -->
                                     @if($product->image)
-                                        <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
+                                        <img src="{{ asset('images/uploads/'.$product->image) }}" alt="{{ $product->name }}" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
                                     @endif
                                 </div>
                                 <input type="file" name="image" accept="image/*">
